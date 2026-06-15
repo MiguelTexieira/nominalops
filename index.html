@@ -530,6 +530,8 @@
     .grid { grid-template-columns: 1fr; }
     .controls .btn { flex: 1 1 140px; }
     .status-badge { font-size: 0.64rem; }
+    /* keep the enormous hero number to two lines (no stray trailing digit) */
+    .hero .token-num { font-size: clamp(1.5rem, 9vw, 2.3rem); }
     /* soften heavy effects on small screens */
     .alarm-glow { animation-duration: 4s; }
   }
