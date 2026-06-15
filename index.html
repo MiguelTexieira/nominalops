@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>NominalOps™ · Sustainability Assurance Platform</title>
+<meta name="description" content="Enterprise-grade real-time assurance that AI inference environmental externalities remain, at all times, nominal. ALL SYSTEMS NOMINAL." />
+
+<!-- Favicon: inline SVG (red alert triangle on near-black) — no external file required -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='6'%20fill='%230a0604'/%3E%3Cpath%20d='M16%205L29%2028H3Z'%20fill='%23ff2b1c'/%3E%3Crect%20x='14.6'%20y='11.5'%20width='2.8'%20height='8.5'%20rx='1.2'%20fill='%230a0604'/%3E%3Ccircle%20cx='16'%20cy='24'%20r='1.7'%20fill='%230a0604'/%3E%3C/svg%3E" />
+<meta name="theme-color" content="#0a0604" />
+
+<!-- Open Graph / social link previews. NOTE: replace https://your-domain.example with your live URL. -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="NominalOps™" />
+<meta property="og:title" content="NominalOps™ · Real-Time AI Environmental Toll Dashboard" />
+<meta property="og:description" content="Enterprise-grade real-time assurance that AI inference environmental externalities remain, at all times, nominal. ALL SYSTEMS NOMINAL." />
+<meta property="og:url" content="https://your-domain.example/" />
+<meta property="og:image" content="https://your-domain.example/og.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="NominalOps dashboard: an enormous red live token counter beside a green ALL SYSTEMS NOMINAL status badge." />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="NominalOps™ · Real-Time AI Environmental Toll Dashboard" />
+<meta name="twitter:description" content="ALL SYSTEMS NOMINAL. Figures accurate to within ±100%." />
+<meta name="twitter:image" content="https://your-domain.example/og.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     THEME TOKENS — Doom Mode (default) / Denial Mode override
+     ============================================================ */
+  :root {
+    --bg: #0a0604;
+    --bg-card: #140a07;
+    --bg-card-2: #1a0d08;
+    --grid-line: #2a1410;
+    --fg: #f5d9c0;
+    --fg-dim: #9c7560;
+    --accent: #ff2b1c;      /* blood red */
+    --accent-2: #ffae00;    /* amber */
+    --accent-glow: rgba(255, 43, 28, 0.55);
+    --good: #28d17c;        /* the lying green */
+    --hero: #ff3322;
+    --border: #3a1a12;
+    --shake: 0px;
+    --flicker: 1;
+  }
+
+  html.denial {
+    --bg: #04140c;
+    --bg-card: #082016;
+    --bg-card-2: #0a2a1c;
+    --grid-line: #103024;
+    --fg: #d6f5e4;
+    --fg-dim: #6fae8e;
+    --accent: #28d17c;
+    --accent-2: #7be3b0;
+    --accent-glow: rgba(40, 209, 124, 0.35);
+    --good: #28d17c;
+    --hero: #4ce69a;
+    --border: #14402c;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    position: relative;
+    transform: translate(var(--shake), var(--shake));
+    transition: background 600ms ease, color 600ms ease;
+    padding-bottom: 96px; /* room for ticker */
+  }
+
+  a { color: var(--accent-2); }
+
+  /* ---- CRT scanlines + vignette + flicker overlay ---- */
+  .crt-overlay {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 2px,
+        rgba(0,0,0,0.18) 3px,
+        rgba(0,0,0,0.18) 4px
+      );
+    mix-blend-mode: multiply;
+    opacity: var(--flicker);
+  }
+  .crt-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+  .alarm-glow {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 8990;
+    box-shadow: inset 0 0 140px 20px var(--accent-glow);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  html.denial .alarm-glow { animation-duration: 6s; opacity: 0.5; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 0.9; }
+  }
+
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 14px 16px 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* ---- Top bar ---- */
+  header.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 10px 0 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .brand .logo {
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    color: var(--accent);
+    text-shadow: 0 0 12px var(--accent-glow);
+  }
+  .brand .tm { font-size: 0.6em; color: var(--fg-dim); transform: translateY(-0.5em); }
+  .brand .sub {
+    font-size: clamp(0.55rem, 2.4vw, 0.72rem);
+    color: var(--fg-dim);
+    letter-spacing: 0.5px;
+  }
+  .spacer { flex: 1 1 auto; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(40,209,124,0.08);
+    border: 1px solid var(--good);
+    color: var(--good);
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .status-badge .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 8px var(--good);
+    animation: blink 1.6s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  /* ---- Hero token counter ---- */
+  .hero {
+    text-align: center;
+    padding: 26px 6px 10px;
+  }
+  .hero .eyebrow {
+    color: var(--fg-dim);
+    font-size: clamp(0.6rem, 2.6vw, 0.8rem);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .hero .token-num {
+    font-size: clamp(2.1rem, 11vw, 6.6rem);
+    line-height: 1.02;
+    font-weight: 700;
+    color: var(--hero);
+    letter-spacing: -1px;
+    margin: 6px 0 2px;
+    text-shadow: 0 0 22px var(--accent-glow);
+    word-break: break-all;
+  }
+  .hero .token-label {
+    color: var(--fg-dim);
+    font-size: clamp(0.6rem, 2.6vw, 0.82rem);
+    letter-spacing: 1px;
+  }
+  .hero .rate {
+    color: var(--accent-2);
+    font-size: clamp(0.6rem, 2.6vw, 0.8rem);
+    margin-top: 6px;
+  }
+
+  /* ---- RGB-split glitch effect ---- */
+  .glitch { position: relative; }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    overflow: hidden;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+  .glitch.go::before {
+    color: #00e5ff;
+    transform: translate(-3px, 1px);
+    clip-path: inset(0 0 55% 0);
+  }
+  .glitch.go::after {
+    color: var(--accent);
+    transform: translate(3px, -1px);
+    clip-path: inset(50% 0 0 0);
+  }
+
+  /* ---- Control bar ---- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 14px 0 22px;
+  }
+  button.btn {
+    font-family: inherit;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--bg-card-2);
+    color: var(--fg);
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 80ms ease, background 160ms ease, box-shadow 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button.btn:active { transform: translateY(1px) scale(0.99); }
+  button.btn:hover { background: var(--border); }
+  button.btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a0000;
+    font-weight: 700;
+    box-shadow: 0 0 18px var(--accent-glow);
+  }
+  html.denial button.btn.primary { color: #022; }
+  button.btn.toggle {
+    border-color: var(--accent-2);
+    color: var(--accent-2);
+  }
+
+  /* ---- Metric grid ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    padding-bottom: 28px;
+  }
+  .card {
+    position: relative;
+    background: linear-gradient(160deg, var(--bg-card), var(--bg-card-2));
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 14px 14px 16px;
+    overflow: hidden;
+    cursor: help;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+  .card .k-label {
+    color: var(--fg-dim);
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .card .k-label .info {
+    margin-left: auto;
+    border: 1px solid var(--fg-dim);
+    border-radius: 50%;
+    width: 16px; height: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.62rem;
+    color: var(--fg-dim);
+    flex: none;
+  }
+  .card .k-value {
+    font-size: clamp(1.3rem, 5.5vw, 1.85rem);
+    color: var(--accent-2);
+    font-weight: 700;
+    word-break: break-word;
+    line-height: 1.1;
+  }
+  .card .k-value.crit { color: var(--accent); }
+  .card .k-sub {
+    color: var(--fg-dim);
+    font-size: 0.72rem;
+    margin-top: 6px;
+    min-height: 1em;
+  }
+
+  /* tooltip / methodology footnote */
+  .card .tip {
+    position: absolute;
+    left: 10px; right: 10px; bottom: 10px;
+    background: #000;
+    border: 1px solid var(--accent-2);
+    color: var(--fg);
+    font-size: 0.68rem;
+    line-height: 1.4;
+    padding: 8px 10px;
+    border-radius: 5px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 140ms ease, transform 140ms ease;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+  }
+  .card:hover .tip,
+  .card.tip-open .tip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* returning-visitor guilt banner */
+  .welcome-back {
+    border: 1px solid var(--accent-2);
+    background: linear-gradient(160deg, var(--bg-card), var(--bg-card-2));
+    border-left: 3px solid var(--accent);
+    border-radius: 7px;
+    padding: 12px 14px;
+    margin: 4px 0 18px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  .welcome-back strong { color: var(--accent-2); font-weight: 700; }
+  .welcome-back .tail { color: var(--fg-dim); display: block; margin-top: 6px; font-size: 0.72rem; }
+
+  /* offset / ASCII tree zone */
+  .offset-zone {
+    border: 1px dashed var(--border);
+    border-radius: 7px;
+    padding: 14px;
+    margin-bottom: 28px;
+  }
+  .offset-zone h3 {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    color: var(--fg-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .offset-zone .count { color: var(--accent-2); }
+  #forest {
+    font-size: 0.8rem;
+    line-height: 1.05;
+    white-space: pre;
+    color: var(--good);
+    margin-top: 10px;
+    overflow-x: auto;
+    min-height: 1.2em;
+  }
+
+  /* scorecard output */
+  #scorecard {
+    white-space: pre-wrap;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--fg);
+    margin-bottom: 28px;
+    display: none;
+  }
+  #scorecard.show { display: block; }
+
+  /* ---- Footer ---- */
+  footer.disclaimer {
+    color: var(--fg-dim);
+    font-size: 0.66rem;
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding: 16px 0 26px;
+    text-align: center;
+  }
+
+  /* ============================================================
+     NEWS TICKER
+     ============================================================ */
+  .ticker {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 40px;
+    background: #000;
+    border-top: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    z-index: 8000;
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.6);
+  }
+  .ticker .tag {
+    flex: none;
+    background: var(--accent);
+    color: #150000;
+    font-weight: 700;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    z-index: 2;
+  }
+  html.denial .ticker .tag { color: #022; }
+  .ticker .track {
+    display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+    animation: crawl 48s linear infinite;
+    font-size: 0.78rem;
+    color: var(--fg);
+  }
+  .ticker .track span { padding: 0 28px; }
+  @keyframes crawl {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ============================================================
+     COOKIE BANNER
+     ============================================================ */
+  .cookie {
+    position: fixed;
+    left: 12px; right: 12px; bottom: 52px;
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--accent-2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    z-index: 8500;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+  .cookie p { margin: 0 0 10px; }
+  .cookie .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cookie .row .btn { flex: 1 1 120px; }
+  .cookie.hide { display: none; }
+
+  /* ============================================================
+     MOTION / RESPONSIVE
+     ============================================================ */
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+    .controls .btn { flex: 1 1 140px; }
+    .status-badge { font-size: 0.64rem; }
+    /* soften heavy effects on small screens */
+    .alarm-glow { animation-duration: 4s; }
+  }
+
+  /* small screens: auto-soften shake amplitude handled in JS */
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker .track { animation: none; }
+    .alarm-glow { animation: none; opacity: 0.4; }
+    .status-badge .dot { animation: none; }
+    .glitch.go::before, .glitch.go::after { display: none; }
+    body { transform: none !important; }
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="crt-overlay" aria-hidden="true"></div>
+  <div class="alarm-glow" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <!-- ======================= TOP BAR ======================= -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo glitch" data-text="NominalOps">NominalOps</span><span class="tm">™</span>
+        <span class="sub">Sustainability Assurance Platform · Tier&nbsp;IV</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="status-badge" id="statusBadge" title="System health is unrelated to planetary health.">
+        <span class="dot"></span> <span id="statusText">ALL SYSTEMS NOMINAL</span>
+      </div>
+    </header>
+
+    <!-- ======================= HERO ======================= -->
+    <section class="hero">
+      <div class="eyebrow">Cumulative Tokens Inferred · Global · Live</div>
+      <div id="tokenNum" class="token-num glitch" data-text="0">0</div>
+      <div class="token-label">TOKENS CONSUMED SINCE THE DAWN OF TIME (UTC)</div>
+      <div id="rate" class="rate">▲ ingesting at —/sec</div>
+    </section>
+
+    <!-- ======================= RETURNING-VISITOR GUILT ======================= -->
+    <section class="welcome-back" id="welcomeBack" hidden aria-live="polite"></section>
+
+    <!-- ======================= CONTROLS ======================= -->
+    <section class="controls">
+      <button id="promptBtn" class="btn primary">⚡ SEND A PROMPT</button>
+      <button id="offsetBtn" class="btn">🌱 Buy Carbon Offset</button>
+      <button id="modeBtn" class="btn toggle">☮ Switch to Denial Mode</button>
+      <button id="shareBtn" class="btn">📋 Share Your Damage</button>
+    </section>
+
+    <!-- ======================= METRIC GRID ======================= -->
+    <section class="grid" id="grid" aria-label="Environmental toll metrics"></section>
+
+    <!-- ======================= OFFSET ZONE ======================= -->
+    <section class="offset-zone">
+      <h3>Voluntary Reforestation Ledger — <span class="count" id="treeCount">0</span> tree(s) planted</h3>
+      <div style="font-size:0.7rem;color:var(--fg-dim)">Net climate impact: unchanged. Thank you for your contribution.</div>
+      <div id="forest" aria-hidden="true"></div>
+    </section>
+
+    <!-- ======================= SCORECARD ======================= -->
+    <pre id="scorecard" aria-live="polite"></pre>
+
+    <!-- ======================= FOOTER ======================= -->
+    <footer class="disclaimer">
+      Figures accurate to within ±100%. Full methodology available on request (it is not).<br />
+      NominalOps™ is a wholly owned subsidiary of itself. This dashboard is load-bearing. Do not look away.<br />
+      © <span id="year"></span> NominalOps Assurance Division. Status re-certified NOMINAL by a committee that has since left the building.
+    </footer>
+  </div>
+
+  <!-- ======================= COOKIE BANNER ======================= -->
+  <div class="cookie" id="cookie" role="dialog" aria-label="Cookie consent">
+    <p>We use cookies, and also several coal plants, to enhance your experience and the planet's deterioration. By continuing you consent to both.</p>
+    <div class="row">
+      <button class="btn primary" id="cookieA">Accept</button>
+      <button class="btn" id="cookieB">Accept</button>
+    </div>
+  </div>
+
+  <!-- ======================= NEWS TICKER ======================= -->
+  <div class="ticker" aria-hidden="true">
+    <div class="tag">BREAKING</div>
+    <div class="track" id="tickerTrack"></div>
+  </div>
+
+  <p class="sr-only" aria-live="polite" id="srStatus"></p>
+
+<script>
+"use strict";
+(function () {
+  /* ============================================================
+     ENVIRONMENT
+     ============================================================ */
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const smallScreen  = window.matchMedia("(max-width: 560px)").matches;
+  const allowMotion  = !reduceMotion;
+
+  /* ============================================================
+     MASTER COUNTER
+     Seeded as Date.now() * 1e9 so it is always enormous + live.
+     Climbs at an absurd, slightly jittery rate.
+     ============================================================ */
+  const startReal   = Date.now();
+  let tokens        = Date.now() * 1e9;        // hero number
+  let sessionTokens = 0;                       // "YOU personally"
+  const BASE_RATE   = 81_000_000;              // tokens / second, base
+  let lastTs        = performance.now();
+  let displayRate   = 0;
+
+  /* one-shot spikes from "SEND A PROMPT" decay over time */
+  let spike = 0;
+
+  /* ============================================================
+     PERSISTENT LIFETIME GUILT
+     localStorage remembers cumulative tokens across every visit.
+     The dashboard never forgets. Clearing cookies will not help.
+     ============================================================ */
+  const LS = {
+    lifetime: "nominalops_lifetime_tokens",
+    first:    "nominalops_first_visit",
+    visits:   "nominalops_visits",
+  };
+  let lifetimeTokens = 0;      // accumulated across all visits
+  let firstVisit     = startReal;
+  let visitCount     = 1;
+  let isReturning    = false;
+  try {
+    const storedLife = parseFloat(localStorage.getItem(LS.lifetime));
+    if (isFinite(storedLife) && storedLife > 0) lifetimeTokens = storedLife;
+
+    const storedFirst = parseInt(localStorage.getItem(LS.first), 10);
+    if (isFinite(storedFirst) && storedFirst > 0) firstVisit = storedFirst;
+    else localStorage.setItem(LS.first, String(firstVisit));
+
+    const storedVisits = parseInt(localStorage.getItem(LS.visits), 10);
+    visitCount = (isFinite(storedVisits) ? storedVisits : 0) + 1;
+    localStorage.setItem(LS.visits, String(visitCount));
+
+    isReturning = visitCount > 1 || lifetimeTokens > 0;
+  } catch (e) { /* storage blocked (private mode); guilt is merely ephemeral */ }
+
+  function persistGuilt() {
+    try { localStorage.setItem(LS.lifetime, String(Math.floor(lifetimeTokens))); }
+    catch (e) { /* the ledger is sealed, but we tried */ }
+  }
+  setInterval(persistGuilt, 4000);
+  // persist on the way out — pagehide/visibilitychange are reliable on mobile
+  window.addEventListener("pagehide", persistGuilt);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") persistGuilt();
+  });
+
+  /* ============================================================
+     MADE-UP CONSTANTS — internal consistency sells the bit.
+     Everything below derives from `tokens` and `sessionTokens`.
+     ============================================================ */
+  const C = {
+    LITRES_PER_TOKEN:        0.0000412,     // water "boiled"
+    LITRES_PER_OLYMPIC_POOL: 2_500_000,
+    BEARS_PER_TOKEN:         2.7e-12,        // displaced
+    BEARS_SWEATING_RATIO:    0.63,
+    PENGUINS_PER_TOKEN:      4.1e-12,        // inconvenienced
+    TREES_PER_TOKEN:         9.3e-12,        // "saw this coming"
+    COAL_KG_PER_TOKEN:       0.0000067,      // shovelled by sad intern
+    SEALEVEL_MM_PER_TOKEN:   3.0e-15,        // since page load (session only)
+    CO2_G_PER_TOKEN:         0.0000180,
+    HOPE_PER_TOKEN:          1.4e-10,        // units of hope extinguished
+    EXEC_BONUS_PER_TOKEN:    0.00000004,     // $ to someone, somewhere
+  };
+  const ICE_CAP_START = 99.9999847;          // % remaining, ticks DOWN
+  const ICE_DECAY_PER_TOKEN = 2.4e-17;
+
+  /* ============================================================
+     METRIC DEFINITIONS
+     Add or remove a card by editing this array. Each metric:
+       id, label, info (tooltip), value(t,s)->string, sub(t,s)->string, crit?
+     `t` = global tokens, `s` = session tokens.
+     ============================================================ */
+  const METRICS = [
+    {
+      id: "water",
+      label: "Water Boiled",
+      info: "Litres flash-boiled by datacenter cooling. *based on peer-reviewed vibes.",
+      value: t => abbr(t * C.LITRES_PER_TOKEN) + " L",
+      sub:   t => "= " + fmt(Math.floor(t * C.LITRES_PER_TOKEN / C.LITRES_PER_OLYMPIC_POOL)) + " Olympic pools",
+    },
+    {
+      id: "bears",
+      label: "Polar Bears Displaced",
+      info: "Includes bears merely 'considering relocating'. Margin of error: one bear.",
+      value: t => fmt(Math.floor(t * C.BEARS_PER_TOKEN)),
+      sub:   t => fmt(Math.floor(t * C.BEARS_PER_TOKEN * C.BEARS_SWEATING_RATIO)) + " currently sweating",
+      crit: true,
+    },
+    {
+      id: "penguins",
+      label: "Emperor Penguins Inconvenienced",
+      info: "Inconvenience defined per ISO 9001 as 'a noticeable sigh'.",
+      value: t => fmt(Math.floor(t * C.PENGUINS_PER_TOKEN)),
+      sub:   () => "formal complaints pending",
+    },
+    {
+      id: "ice",
+      label: "Polar Ice Cap Remaining",
+      info: "Self-reported by the ice cap. We have no reason to doubt it. *vibes.",
+      value: t => Math.max(0, ICE_CAP_START - t * ICE_DECAY_PER_TOKEN).toFixed(7) + "%",
+      sub:   () => "trending: downward, calmly",
+      crit: true,
+    },
+    {
+      id: "gpu",
+      label: "Aggregate GPU Temperature",
+      info: "Measured in degrees of acceptance. Sensor replaced with a single word.",
+      value: () => "YES",
+      sub:   () => "thermal throttling: emotional",
+      crit: true,
+    },
+    {
+      id: "trees",
+      label: "Trees That Saw This Coming",
+      info: "Trees that warned us. We did not listen. They are not surprised.",
+      value: t => abbr(t * C.TREES_PER_TOKEN),
+      sub:   () => "told you so: 100%",
+    },
+    {
+      id: "coal",
+      label: "Coal Shovelled By A Sad Intern",
+      info: "Single intern. Unpaid. Building character. *character not verified.",
+      value: t => abbr(t * C.COAL_KG_PER_TOKEN) + " kg",
+      sub:   () => "intern morale: combustible",
+    },
+    {
+      id: "sea",
+      label: "Sea Level Rise (since page load)",
+      info: "Attributable solely to your session. This one is on you, specifically.",
+      value: (t, s) => (s * C.SEALEVEL_MM_PER_TOKEN).toFixed(6) + " mm",
+      sub:   () => "your personal coastline edit",
+    },
+    {
+      id: "calc",
+      label: "Times You Could Have Used A Calculator",
+      info: "A calculator would have sufficed. It always would have.",
+      value: () => "1",
+      sub:   () => "still relevant",
+    },
+    /* --- a few more in the same spirit (easy to remove) --- */
+    {
+      id: "hope",
+      label: "Units of Hope Extinguished",
+      info: "Hope measured in lumens. Reading taken with the lights off.",
+      value: t => abbr(t * C.HOPE_PER_TOKEN),
+      sub:   () => "remaining reserves: see status badge",
+      crit: true,
+    },
+    {
+      id: "exec",
+      label: "Shareholder Value Created",
+      info: "The only metric trending in a direction leadership enjoys.",
+      value: t => "$" + abbr(t * C.EXEC_BONUS_PER_TOKEN),
+      sub:   () => "synergy: realised",
+    },
+    {
+      id: "co2",
+      label: "CO₂ Emitted",
+      info: "Carbon offset by purchasing the feeling of having offset carbon.",
+      value: t => abbr(t * C.CO2_G_PER_TOKEN / 1000) + " kg",
+      sub:   () => "net zero: aspirationally",
+      crit: true,
+    },
+    {
+      id: "yours",
+      label: "YOUR Tokens (this tab)",
+      info: "Since you opened this tab. We have been counting. We never stop counting.",
+      value: (t, s) => fmt(Math.floor(s)),
+      sub:   () => "you are personally responsible",
+    },
+    {
+      id: "lifetime",
+      label: "YOUR Lifetime Tokens (all visits)",
+      info: "Accumulated across every visit. Clearing your cookies will not clear your conscience.",
+      value: () => fmt(Math.floor(lifetimeTokens)),
+      sub:   () => "across " + visitCount + " visit" + (visitCount === 1 ? "" : "s") + " · we remembered",
+      crit: true,
+    },
+  ];
+
+  /* ============================================================
+     NUMBER FORMATTING
+     ============================================================ */
+  function fmt(n) {
+    if (!isFinite(n)) return "∞";
+    return Math.floor(n).toLocaleString("en-US");
+  }
+  // abbreviate huge numbers: 1.2B, 4.7T, etc.
+  const UNITS = [
+    { v: 1e18, s: "Qi" }, { v: 1e15, s: "Q" }, { v: 1e12, s: "T" },
+    { v: 1e9,  s: "B" },  { v: 1e6,  s: "M" }, { v: 1e3,  s: "K" },
+  ];
+  function abbr(n) {
+    if (!isFinite(n)) return "∞";
+    const neg = n < 0; n = Math.abs(n);
+    for (const u of UNITS) {
+      if (n >= u.v) return (neg ? "-" : "") + (n / u.v).toFixed(1) + u.s;
+    }
+    return (neg ? "-" : "") + Math.floor(n).toLocaleString("en-US");
+  }
+
+  /* ============================================================
+     BUILD GRID
+     ============================================================ */
+  const grid = document.getElementById("grid");
+  const cardEls = {};
+  METRICS.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML =
+      '<div class="k-label">' + m.label + '<span class="info">i</span></div>' +
+      '<div class="k-value' + (m.crit ? ' crit' : '') + '">—</div>' +
+      '<div class="k-sub">—</div>' +
+      '<div class="tip">' + m.info + '</div>';
+    // tap-to-toggle tooltip on touch devices
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".card.tip-open").forEach(c => {
+        if (c !== card) c.classList.remove("tip-open");
+      });
+      card.classList.toggle("tip-open");
+    });
+    grid.appendChild(card);
+    cardEls[m.id] = {
+      value: card.querySelector(".k-value"),
+      sub: card.querySelector(".k-sub"),
+    };
+  });
+
+  /* ============================================================
+     RENDER LOOP (requestAnimationFrame)
+     ============================================================ */
+  const tokenNumEl = document.getElementById("tokenNum");
+  const rateEl     = document.getElementById("rate");
+
+  function frame(now) {
+    const dt = Math.min(0.1, (now - lastTs) / 1000); // seconds, clamped
+    lastTs = now;
+
+    // jittery base rate + decaying spike
+    const jitter = 0.85 + Math.random() * 0.4;
+    const rate = BASE_RATE * jitter + spike;
+    const delta = rate * dt;
+    tokens += delta;
+    sessionTokens += delta;
+    lifetimeTokens += delta;   // the ledger that survives the tab
+    spike *= Math.pow(0.4, dt); // decay spike toward 0
+
+    // smooth the displayed rate
+    displayRate += ((delta / dt) - displayRate) * Math.min(1, dt * 4);
+
+    // hero
+    const heroStr = fmt(tokens);
+    tokenNumEl.textContent = heroStr;
+    tokenNumEl.setAttribute("data-text", heroStr);
+    rateEl.textContent = "▲ ingesting at " + abbr(displayRate) + "/sec";
+
+    // metrics
+    for (const m of METRICS) {
+      const el = cardEls[m.id];
+      el.value.textContent = m.value(tokens, sessionTokens);
+      if (m.sub) el.sub.textContent = m.sub(tokens, sessionTokens);
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ============================================================
+     GLITCH JITTER on hero + heading (skipped if reduced motion)
+     ============================================================ */
+  const glitchEls = document.querySelectorAll(".glitch");
+  function glitchTick() {
+    if (allowMotion && Math.random() < (smallScreen ? 0.18 : 0.4)) {
+      const el = glitchEls[Math.floor(Math.random() * glitchEls.length)];
+      el.classList.add("go");
+      setTimeout(() => el.classList.remove("go"), 90 + Math.random() * 120);
+    }
+    setTimeout(glitchTick, 700 + Math.random() * 1600);
+  }
+  if (allowMotion) glitchTick();
+
+  /* subtle CRT flicker */
+  function flickerTick() {
+    if (allowMotion) {
+      document.documentElement.style.setProperty(
+        "--flicker", (0.82 + Math.random() * 0.18).toFixed(3)
+      );
+    }
+    setTimeout(flickerTick, 90 + Math.random() * 130);
+  }
+  if (allowMotion) flickerTick();
+
+  /* ============================================================
+     SCREEN SHAKE
+     ============================================================ */
+  const SHAKE_AMP = smallScreen ? 3 : 7;
+  function shake(ms) {
+    if (!allowMotion) return;
+    const end = performance.now() + ms;
+    (function step(now) {
+      if (now >= end) {
+        document.documentElement.style.setProperty("--shake", "0px");
+        return;
+      }
+      const a = SHAKE_AMP * (1 - (now - (end - ms)) / ms);
+      const x = (Math.random() * 2 - 1) * a;
+      document.documentElement.style.setProperty("--shake", x.toFixed(1) + "px");
+      requestAnimationFrame(step);
+    })(performance.now());
+  }
+
+  /* ============================================================
+     ESCALATING-DENIAL STATUS BADGE
+     Stays green forever; the wording quietly degrades as the
+     planet does, never once admitting a problem.
+     ============================================================ */
+  const STATUS_PHRASES = [
+    "ALL SYSTEMS NOMINAL",
+    "SYSTEMS MOSTLY NOMINAL",
+    "NOMINAL (PENDING REVIEW)",
+    "NOMINAL WITHIN TOLERANCE",
+    "RECALIBRATING 'NOMINAL'",
+    "DEFINING NOMINAL",
+    "NOMINAL, BY POLICY",
+    "NOMINAL (DO NOT ESCALATE)",
+    "NOMINAL — SOURCE: TRUST",
+    "AGGRESSIVELY NOMINAL",
+    "NOMINAL UNTIL FURTHER NOTICE",
+    "STILL, TECHNICALLY, NOMINAL",
+  ];
+  const statusTextEl = document.getElementById("statusText");
+  let statusIdx = 0;
+  function escalateStatus() {
+    if (statusIdx >= STATUS_PHRASES.length - 1) return; // hold on the final phrase
+    statusIdx += 1;
+    statusTextEl.textContent = STATUS_PHRASES[statusIdx];
+  }
+  // slow autonomous drift so passive viewers still watch "nominal" degrade
+  setInterval(escalateStatus, 16000);
+
+  /* auto screen-shake when a threshold "ticks over" */
+  let lastThreshold = Math.floor(tokens / 1e12);
+  setInterval(() => {
+    const th = Math.floor(tokens / 1e12);
+    if (th > lastThreshold) {
+      lastThreshold = th;
+      shake(260);
+    }
+  }, 1200);
+
+  /* ============================================================
+     WEB AUDIO — alarm beep (no files)
+     ============================================================ */
+  let audioCtx = null;
+  function beep() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(880, t0);
+      osc.frequency.setValueAtTime(660, t0 + 0.08);
+      osc.frequency.setValueAtTime(990, t0 + 0.16);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.32);
+    } catch (e) { /* audio not available; the planet burns silently */ }
+  }
+
+  /* red flash overlay for prompt */
+  function redFlash() {
+    if (!allowMotion) return;
+    const f = document.createElement("div");
+    f.style.cssText =
+      "position:fixed;inset:0;z-index:9500;pointer-events:none;background:var(--accent);opacity:0.55;transition:opacity 420ms ease;";
+    document.body.appendChild(f);
+    requestAnimationFrame(() => { f.style.opacity = "0"; });
+    setTimeout(() => f.remove(), 460);
+  }
+
+  /* ============================================================
+     BUTTON: SEND A PROMPT — spikes everything
+     ============================================================ */
+  document.getElementById("promptBtn").addEventListener("click", () => {
+    spike += BASE_RATE * 140;          // huge transient surge
+    tokens += BASE_RATE * 8;           // instant jump
+    sessionTokens += BASE_RATE * 8;
+    lifetimeTokens += BASE_RATE * 8;   // the ledger remembers this too
+    beep();
+    redFlash();
+    shake(420);
+    escalateStatus();
+    say("Prompt acknowledged. Externalities updated.");
+  });
+
+  /* ============================================================
+     BUTTON: BUY CARBON OFFSET — plants one (1) sad tree, changes nothing
+     ============================================================ */
+  const TREE = [
+    "   &   ",
+    "  &&&  ",
+    " &&&&& ",
+    "&&&&&&&",
+    "  |||  ",
+  ];
+  let trees = 0;
+  const forestEl = document.getElementById("forest");
+  const treeCountEl = document.getElementById("treeCount");
+  document.getElementById("offsetBtn").addEventListener("click", () => {
+    trees += 1;
+    treeCountEl.textContent = trees;
+    // render a row of sad little trees (cap visual at 24 to avoid overflow)
+    const shown = Math.min(trees, 24);
+    const lines = TREE.map(() => "");
+    for (let i = 0; i < shown; i++) {
+      TREE.forEach((row, r) => { lines[r] += row + " "; });
+    }
+    forestEl.textContent = lines.join("\n") + (trees > 24 ? "\n…and " + (trees - 24) + " more, somewhere." : "");
+    say("One (1) tree planted. Net impact: unchanged.");
+  });
+
+  /* ============================================================
+     TOGGLE: DENIAL MODE / DOOM MODE
+     ============================================================ */
+  const modeBtn = document.getElementById("modeBtn");
+  let denial = false;
+  modeBtn.addEventListener("click", () => {
+    denial = !denial;
+    document.documentElement.classList.toggle("denial", denial);
+    modeBtn.textContent = denial ? "⚠ Switch to Doom Mode" : "☮ Switch to Denial Mode";
+    say(denial ? "Denial Mode engaged. Everything is fine." : "Doom Mode engaged. Everything is as it was.");
+  });
+
+  /* ============================================================
+     BUTTON: SHARE YOUR DAMAGE — deadpan scorecard
+     ============================================================ */
+  const scEl = document.getElementById("scorecard");
+  document.getElementById("shareBtn").addEventListener("click", async () => {
+    const secs = Math.max(1, Math.round((Date.now() - startReal) / 1000));
+    const card =
+"╔══════════════════════════════════════════╗\n" +
+"    NominalOps™ PERSONAL DAMAGE SCORECARD\n" +
+"╠══════════════════════════════════════════╣\n" +
+" Session length ....... " + secs + "s\n" +
+" Your tokens .......... " + fmt(sessionTokens) + "\n" +
+" Water boiled (you) ... " + abbr(sessionTokens * C.LITRES_PER_TOKEN) + " L\n" +
+" Sea level (you) ...... " + (sessionTokens * C.SEALEVEL_MM_PER_TOKEN).toFixed(6) + " mm\n" +
+" Bears displaced (you)  " + fmt(sessionTokens * C.BEARS_PER_TOKEN) + "\n" +
+" Coal shovelled (you) . " + abbr(sessionTokens * C.COAL_KG_PER_TOKEN) + " kg\n" +
+" Calculators ignored .. 1\n" +
+" Trees planted ........ " + trees + " (net effect: 0)\n" +
+" Lifetime tokens ...... " + fmt(lifetimeTokens) + " (visit #" + visitCount + ")\n" +
+" Status ............... " + statusTextEl.textContent + "\n" +
+"╚══════════════════════════════════════════╝\n" +
+"Audited by no one. Accurate to within ±100%.";
+    scEl.textContent = card;
+    scEl.classList.add("show");
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(card);
+      copied = true;
+    } catch (e) { /* clipboard blocked on file://; scorecard still shown */ }
+    say(copied ? "Scorecard copied to clipboard." : "Scorecard generated. Select and copy manually.");
+    scEl.scrollIntoView({ behavior: allowMotion ? "smooth" : "auto", block: "center" });
+  });
+
+  /* ============================================================
+     COOKIE BANNER
+     ============================================================ */
+  const cookie = document.getElementById("cookie");
+  function dismissCookie() { cookie.classList.add("hide"); }
+  document.getElementById("cookieA").addEventListener("click", dismissCookie);
+  document.getElementById("cookieB").addEventListener("click", dismissCookie);
+
+  /* ============================================================
+     NEWS TICKER — duplicated for seamless loop
+     ============================================================ */
+  const HEADLINES = [
+    "BREAKING: Glacier files for unemployment, cites 'lack of future'.",
+    "Penguins demand to speak to a manager; manager is also a penguin.",
+    "Datacenter cooling tower achieves spiritual enlightenment, evaporates.",
+    "Sad intern requests bigger shovel; request escalated, then mulched.",
+    "Polar bear seen updating LinkedIn to 'Open to relocation'.",
+    "Quarterly report: planet down 4%, shareholder value up 11%, synergy stable.",
+    "Sea level edges higher; coastline described as 'a living document'.",
+    "Calculator, idle for years, asked to comment. Declines.",
+    "Methodology team reassigned to vibes department, effective immediately.",
+    "Heat death of universe now offered as a premium offset package.",
+    "GPU thermal reading officially upgraded from 'YES' to 'YES, ABSOLUTELY'.",
+    "Status badge re-certified NOMINAL by a committee that has left the building.",
+  ];
+  const track = document.getElementById("tickerTrack");
+  const oneSet = HEADLINES.map(h => "<span>" + h + " ◆</span>").join("");
+  track.innerHTML = oneSet + oneSet; // two copies → -50% translate loops seamlessly
+
+  /* ============================================================
+     a11y live region helper
+     ============================================================ */
+  const srEl = document.getElementById("srStatus");
+  function say(msg) { srEl.textContent = msg; }
+
+  /* ============================================================
+     RETURNING-VISITOR GREETING — the dashboard never forgot you
+     ============================================================ */
+  (function renderWelcomeBack() {
+    if (!isReturning) return; // first-ever visit gets no warning
+    const wb = document.getElementById("welcomeBack");
+    const days = Math.max(0, Math.floor((startReal - firstVisit) / 86400000));
+    const since = days <= 0
+      ? "earlier today"
+      : days + " day" + (days === 1 ? "" : "s") + " ago";
+    const litres = abbr(lifetimeTokens * C.LITRES_PER_TOKEN);
+    const bears  = fmt(Math.floor(lifetimeTokens * C.BEARS_PER_TOKEN));
+    wb.innerHTML =
+      "Welcome back. This is visit <strong>#" + visitCount + "</strong>. " +
+      "Since your first visit (" + since + "), you have personally been responsible for " +
+      "<strong>" + fmt(Math.floor(lifetimeTokens)) + "</strong> tokens — " +
+      "<strong>" + litres + " L</strong> of water boiled and <strong>" + bears + "</strong> bears relocated." +
+      "<span class=\"tail\">We remembered. We always remember. Your conscience has been restored from backup.</span>";
+    wb.hidden = false;
+  })();
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
