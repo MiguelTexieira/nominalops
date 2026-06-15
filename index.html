@@ -580,7 +580,7 @@
     <section class="welcome-back" id="welcomeBack" hidden aria-live="polite"></section>
 
     <!-- ======================= CONTROLS ======================= -->
-    <section class="controls">
+    <section class="controls" id="controls">
       <button id="promptBtn" class="btn primary">⚡ SEND A PROMPT</button>
       <button id="offsetBtn" class="btn">🌱 Buy Carbon Offset</button>
       <button id="modeBtn" class="btn toggle">☮ Switch to Denial Mode</button>
@@ -591,7 +591,7 @@
     <section class="grid" id="grid" aria-label="Environmental toll metrics"></section>
 
     <!-- ======================= OFFSET ZONE ======================= -->
-    <section class="offset-zone">
+    <section class="offset-zone" id="offsetZone">
       <h3>Voluntary Reforestation Ledger — <span class="count" id="treeCount">0</span> tree(s) planted</h3>
       <div style="font-size:0.7rem;color:var(--fg-dim)">Net climate impact: unchanged. Thank you for your contribution.</div>
       <div id="forest" aria-hidden="true"></div>
@@ -1056,6 +1056,11 @@
   let trees = 0;
   const forestEl = document.getElementById("forest");
   const treeCountEl = document.getElementById("treeCount");
+  const offsetZone = document.getElementById("offsetZone");
+  const controlsEl = document.getElementById("controls");
+  const narrowMQ = window.matchMedia("(max-width: 560px)");
+  let zoneMoved = false;
+
   document.getElementById("offsetBtn").addEventListener("click", () => {
     trees += 1;
     treeCountEl.textContent = trees;
@@ -1066,6 +1071,15 @@
       TREE.forEach((row, r) => { lines[r] += row + " "; });
     }
     forestEl.textContent = lines.join("\n") + (trees > 24 ? "\n…and " + (trees - 24) + " more, somewhere." : "");
+
+    // On narrow screens the ledger sits far below the fold, so the planted
+    // tree is invisible. Move it directly beneath the buttons on first click.
+    if (narrowMQ.matches && !zoneMoved) {
+      controlsEl.after(offsetZone);
+      zoneMoved = true;
+      offsetZone.scrollIntoView({ behavior: allowMotion ? "smooth" : "auto", block: "nearest" });
+    }
+
     say("One (1) tree planted. Net impact: unchanged.");
   });
 
