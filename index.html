@@ -7,8 +7,28 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
+  // Consent Mode v2 — deny by default until the visitor accepts via the banner.
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+  // Honour a previously granted choice so returning visitors aren't re-prompted.
+  try {
+    if (localStorage.getItem('nominalops_consent') === 'granted') {
+      gtag('consent', 'update', {
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted'
+      });
+    }
+  } catch (e) {}
+
+  gtag('js', new Date());
   gtag('config', 'G-L8JWYT5WCQ');
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -1095,12 +1115,34 @@
   });
 
   /* ============================================================
-     COOKIE BANNER
+     COOKIE BANNER + GOOGLE CONSENT MODE v2
+     Analytics is denied by default (set in <head>). Either "Accept"
+     grants consent, persists the choice, and stops re-prompting.
      ============================================================ */
   const cookie = document.getElementById("cookie");
-  function dismissCookie() { cookie.classList.add("hide"); }
-  document.getElementById("cookieA").addEventListener("click", dismissCookie);
-  document.getElementById("cookieB").addEventListener("click", dismissCookie);
+  const CONSENT_KEY = "nominalops_consent";
+
+  function grantConsent() {
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", {
+        ad_storage: "granted",
+        ad_user_data: "granted",
+        ad_personalization: "granted",
+        analytics_storage: "granted",
+      });
+    }
+    try { localStorage.setItem(CONSENT_KEY, "granted"); } catch (e) { /* storage blocked */ }
+    cookie.classList.add("hide");
+    say("Consent acknowledged. Telemetry — and the coal plants — are now online.");
+  }
+
+  // If they already accepted on a previous visit, don't show the banner again.
+  let priorConsent = null;
+  try { priorConsent = localStorage.getItem(CONSENT_KEY); } catch (e) { /* storage blocked */ }
+  if (priorConsent === "granted") cookie.classList.add("hide");
+
+  document.getElementById("cookieA").addEventListener("click", grantConsent);
+  document.getElementById("cookieB").addEventListener("click", grantConsent);
 
   /* ============================================================
      NEWS TICKER — duplicated for seamless loop
