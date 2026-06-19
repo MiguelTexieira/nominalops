@@ -275,6 +275,11 @@
     box-shadow: 0 0 30px rgba(0,0,0,0.6) inset;
     touch-action: manipulation;
   }
+  /* While a menu/end overlay is shown, give the stage room so the overlay
+     (title → … → start button) isn't clipped to the short scaled canvas on
+     narrow screens. No effect on desktop, where the canvas is already taller.
+     Removed during play so the stage hugs the canvas again. */
+  .stage.menu-open { min-height: 82vh; min-height: 82svh; }
   canvas#field { display: block; width: 100%; height: auto; }
 
   /* ---- Overlays: menu / win / lose ---- */
@@ -287,6 +292,7 @@
     padding: 24px;
     background: rgba(6,3,2,0.86);
     z-index: 5;
+    overflow-y: auto;            /* scroll as a fallback if content is taller */
   }
   .overlay[hidden] { display: none; }
   .overlay h2 {
@@ -385,6 +391,12 @@
     .alarm-glow { animation: none; }
     body { transform: none; }
   }
+
+  /* On narrow screens, top-align overlay content so a tall menu stays fully
+     scrollable (a vertically-centred overflow can leave the top unreachable). */
+  @media (max-width: 640px) {
+    .overlay { justify-content: flex-start; }
+  }
 </style>
 </head>
 <body>
@@ -422,7 +434,7 @@
     <section class="picker" id="picker" aria-label="Deployable GPU shards"></section>
 
     <!-- ======================= PLAYFIELD ======================= -->
-    <div class="stage" id="stage">
+    <div class="stage menu-open" id="stage">
       <canvas id="field" width="900" height="500" aria-label="Defence grid"></canvas>
       <div class="toast" id="toast" aria-hidden="true"></div>
 
@@ -1197,6 +1209,7 @@
     selectedTowerId = null;
     Object.keys(cooldowns).forEach(k => delete cooldowns[k]);
     clearTimeout(waveTimer);         // drop any pending "next wave" from a prior round
+    stage.classList.remove('menu-open');   // stage hugs the canvas during play
     menuOverlay.hidden = true;
     endOverlay.hidden = true;
     buildPicker();
@@ -1224,6 +1237,7 @@
         '. ' + kills + ' repelled before the breach. An incident report has been ' +
         'filed and immediately marked <b>NOMINAL</b>.';
     }
+    stage.classList.add('menu-open');      // give the end overlay room to breathe
     endOverlay.hidden = false;
     announce(won ? 'You won. Perimeter held.' : 'Game over. Perimeter breached.');
   }
