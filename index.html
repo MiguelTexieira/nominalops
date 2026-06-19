@@ -281,7 +281,7 @@
     justify-content: center;
     padding: 14px 0 22px;
   }
-  button.btn {
+  button.btn, a.btn {
     font-family: inherit;
     min-height: 46px;
     padding: 0 16px;
@@ -296,8 +296,15 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  button.btn:active { transform: translateY(1px) scale(0.99); }
-  button.btn:hover { background: var(--border); }
+  /* anchors styled as buttons need the box model + link resets buttons get for free */
+  a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+  button.btn:active, a.btn:active { transform: translateY(1px) scale(0.99); }
+  button.btn:hover, a.btn:hover { background: var(--border); color: var(--fg); }
   button.btn.primary {
     background: var(--accent);
     border-color: var(--accent);
@@ -608,6 +615,7 @@
       <button id="offsetBtn" class="btn">🌱 Buy Carbon Offset</button>
       <button id="modeBtn" class="btn toggle">☮ Switch to Denial Mode</button>
       <button id="shareBtn" class="btn">📋 Share Your Damage</button>
+      <a id="gameBtn" class="btn" href="game.html">🐻‍❄️ Defend the Datacentre</a>
     </section>
 
     <!-- ======================= METRIC GRID ======================= -->
