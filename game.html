@@ -265,6 +265,26 @@
   }
   .tower-card.cooling .tc-cd { display: flex; }
 
+  /* ---- Rotate nudge (portrait phones only; the grid is a wide 9:5) ---- */
+  .rotate-hint {
+    display: none;                 /* shown only in the portrait media query below */
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--accent-2);
+    border-radius: 6px;
+    background: rgba(255, 174, 0, 0.08);
+    color: var(--accent-2);
+    font-size: 0.7rem;
+    line-height: 1.4;
+    letter-spacing: 0.4px;
+  }
+  .rotate-hint .ico { font-size: 1.05rem; flex: none; }
+  @media (orientation: portrait) and (max-width: 640px) {
+    .rotate-hint { display: flex; }
+  }
+
   /* ---- Canvas frame ---- */
   .stage {
     position: relative;
@@ -434,6 +454,11 @@
     <section class="picker" id="picker" aria-label="Deployable GPU shards"></section>
 
     <!-- ======================= PLAYFIELD ======================= -->
+    <p class="rotate-hint" role="note">
+      <span class="ico" aria-hidden="true">🔁</span>
+      Rotate your device to landscape for the full defence grid.
+    </p>
+
     <div class="stage menu-open" id="stage">
       <canvas id="field" width="900" height="500" aria-label="Defence grid"></canvas>
       <div class="toast" id="toast" aria-hidden="true"></div>
