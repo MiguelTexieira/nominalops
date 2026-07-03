@@ -37,9 +37,9 @@
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <link rel="canonical" href="https://nominalops.com/" />
 
-<!-- Favicon: inline SVG (red alert triangle on near-black) — no external file required -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='6'%20fill='%230a0604'/%3E%3Cpath%20d='M16%205L29%2028H3Z'%20fill='%23ff2b1c'/%3E%3Crect%20x='14.6'%20y='11.5'%20width='2.8'%20height='8.5'%20rx='1.2'%20fill='%230a0604'/%3E%3Ccircle%20cx='16'%20cy='24'%20r='1.7'%20fill='%230a0604'/%3E%3C/svg%3E" />
-<meta name="theme-color" content="#0a0604" />
+<!-- Favicon: inline SVG (white N on hazard-red rounded square) — no external file required -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%23d13b34'/%3E%3Ctext%20x='16'%20y='23'%20font-family='monospace'%20font-size='20'%20font-weight='700'%20fill='%23fff2f1'%20text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
+<meta name="theme-color" content="#070405" />
 
 <!-- Open Graph / social link previews. -->
 <meta property="og:type" content="website" />
@@ -61,41 +61,63 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   /* ============================================================
-     THEME TOKENS — Doom Mode (default) / Denial Mode override
+     DESIGN TOKENS — "enterprise doom" (see design handoff)
      ============================================================ */
   :root {
-    --bg: #0a0604;
-    --bg-card: #140a07;
-    --bg-card-2: #1a0d08;
-    --grid-line: #2a1410;
-    --fg: #f5d9c0;
-    --fg-dim: #9c7560;
-    --accent: #ff2b1c;      /* blood red */
-    --accent-2: #ffae00;    /* amber */
-    --accent-glow: rgba(255, 43, 28, 0.55);
-    --good: #28d17c;        /* the lying green */
-    --hero: #ff3322;
-    --border: #3a1a12;
-    --shake: 0px;
-    --flicker: 1;
-  }
+    /* surfaces */
+    --bg-0: #070405;
+    --bg-1: #0a0607;
+    --bg-dashboard: radial-gradient(120% 80% at 50% 0%, #16090a 0%, #0a0607 55%, #070405 100%);
+    --card-bg: rgba(255, 90, 77, 0.05);
+    --card-border: #2c1a19;
+    --border-2: #3a2422;
 
-  html.denial {
-    --bg: #04140c;
-    --bg-card: #082016;
-    --bg-card-2: #0a2a1c;
-    --grid-line: #103024;
-    --fg: #d6f5e4;
-    --fg-dim: #6fae8e;
-    --accent: #28d17c;
-    --accent-2: #7be3b0;
-    --accent-glow: rgba(40, 209, 124, 0.35);
-    --good: #28d17c;
-    --hero: #4ce69a;
-    --border: #14402c;
+    /* hazard red */
+    --red-hero: #ff5a4d;
+    --red-btn: #d13b34;
+    --red-btn-text: #fff2f1;
+    --red-soft: #ff8a80;
+    --red-softer: #ffb4b0;
+    --ticker-bg: #4a1414;
+    --ticker-border: #6e2020;
+
+    /* text */
+    --text: #efe6e4;
+    --text-strong: #f4ebe9;
+    --text-2: #c4a9a9;
+    --label: #b39494;
+    --muted: #8a6f6f;
+    --muted-2: #6b5555;
+
+    /* nominal / offset greens */
+    --green-dot: #6ddb85;
+    --green-text: #b7e8c1;
+    --green-tag: #7fbf8e;
+    --green-card-bg: rgba(74, 150, 90, 0.06);
+    --green-card-border: #253526;
+    --green-badge-bg: rgba(74, 150, 90, 0.10);
+    --green-badge-border: rgba(110, 200, 130, 0.24);
+
+    /* denial screen */
+    --denial-bg: radial-gradient(120% 90% at 50% 20%, #0d1a14 0%, #08110d 60%, #060b09 100%);
+    --denial-text: #eafaf1;
+    --denial-soft: #9cc4b0;
+    --denial-label: #6f9a83;
+    --denial-value: #7fd3a0;
+    --denial-accent: #5bbf86;
+    --denial-check: #8fe0ad;
+    --denial-border: #2a4436;
+    --denial-row-bg: rgba(91, 191, 134, 0.06);
+
+    --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --radius-card: 12px;
+    --radius-btn: 13px;
+    --shake: 0px;
   }
 
   * { box-sizing: border-box; }
@@ -103,249 +125,316 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: var(--font-sans);
     -webkit-text-size-adjust: 100%;
     overflow-x: hidden;
   }
 
   body {
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
-    transform: translate(var(--shake), var(--shake));
-    transition: background 600ms ease, color 600ms ease;
-    padding-bottom: 96px; /* room for ticker */
+    background: var(--bg-dashboard);
+    background-attachment: fixed;
+  }
+  html.denial-open { overflow: hidden; }
+  /* shake lives on the wrapper, NOT body — a transform on body would make it
+     the containing block for position:fixed (denial screen, cookie banner) */
+  .wrap { transform: translate(var(--shake), var(--shake)); }
+
+  a { color: var(--red-soft); }
+
+  button { font-family: inherit; }
+  :is(button, a):focus-visible {
+    outline: 2px solid var(--red-soft);
+    outline-offset: 2px;
   }
 
-  a { color: var(--accent-2); }
+  @keyframes np-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes np-breathe { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.12); opacity: 0.5; } }
+  @keyframes np-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 94% { opacity: 0.4; } 96% { opacity: 1; } }
 
-  /* ---- CRT scanlines + vignette + flicker overlay ---- */
-  .crt-overlay {
-    pointer-events: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9000;
-    background:
-      repeating-linear-gradient(
-        to bottom,
-        rgba(0,0,0,0) 0px,
-        rgba(0,0,0,0) 2px,
-        rgba(0,0,0,0.18) 3px,
-        rgba(0,0,0,0.18) 4px
-      );
-    mix-blend-mode: multiply;
-    opacity: var(--flicker);
-  }
-  .crt-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
-  }
-  .alarm-glow {
-    pointer-events: none;
-    position: fixed;
-    inset: 0;
-    z-index: 8990;
-    box-shadow: inset 0 0 140px 20px var(--accent-glow);
-    animation: pulse 2.4s ease-in-out infinite;
-  }
-  html.denial .alarm-glow { animation-duration: 6s; opacity: 0.5; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.35; }
-    50%      { opacity: 0.9; }
+  /* mono labels: uppercase, tracked-out */
+  .mono-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
   }
 
   /* ============================================================
-     LAYOUT
+     BREAKING TICKER — full-width bar pinned to the top
+     ============================================================ */
+  .ticker {
+    background: var(--ticker-bg);
+    border-top: 1px solid var(--ticker-border);
+    border-bottom: 1px solid var(--ticker-border);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    color: var(--red-softer);
+  }
+  .ticker .tag {
+    flex: none;
+    padding: 6px 0 6px 20px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    background: var(--ticker-bg);   /* opaque so the crawl passes behind it */
+    position: relative;
+    z-index: 2;
+  }
+  .ticker .track {
+    display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+    animation: crawl 60s linear infinite;
+    padding: 6px 0;
+  }
+  .ticker .track span { padding: 0 26px; }
+  @keyframes crawl {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ============================================================
+     LAYOUT — mobile-first single column, 22px gutters
      ============================================================ */
   .wrap {
-    max-width: 1180px;
+    max-width: 640px;
     margin: 0 auto;
-    padding: 14px 16px 0;
+    padding: 16px 22px 40px;
     position: relative;
     z-index: 10;
   }
 
-  /* ---- Top bar ---- */
+  /* ---- Header row ---- */
   header.topbar {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px 16px;
-    padding: 10px 0 14px;
-    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    padding: 2px 0 18px;
   }
   .brand {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-  .brand .logo {
-    font-size: clamp(1.1rem, 4vw, 1.6rem);
-    color: var(--accent);
-    text-shadow: 0 0 12px var(--accent-glow);
-  }
-  .brand .tm { font-size: 0.6em; color: var(--fg-dim); transform: translateY(-0.5em); }
-  .brand .sub {
-    font-size: clamp(0.55rem, 2.4vw, 0.72rem);
-    color: var(--fg-dim);
-    letter-spacing: 0.5px;
-  }
-  .spacer { flex: 1 1 auto; }
-
-  .status-badge {
-    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(40,209,124,0.08);
-    border: 1px solid var(--good);
-    color: var(--good);
-    padding: 7px 12px;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    letter-spacing: 0.5px;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+  }
+  .brand .logo-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background: var(--red-btn);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #12080a;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    flex: none;
+  }
+  .tier-pill {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    color: var(--label);
+    border: 1px solid var(--border-2);
+    padding: 3px 8px;
+    border-radius: 20px;
     white-space: nowrap;
   }
-  .status-badge .dot {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--good);
-    box-shadow: 0 0 8px var(--good);
-    animation: blink 1.6s steps(2) infinite;
-  }
-  @keyframes blink { 50% { opacity: 0.25; } }
 
-  /* ---- Hero token counter ---- */
-  .hero {
-    text-align: center;
-    padding: 26px 6px 10px;
+  /* ---- Nominal badge (ironic) ---- */
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--green-badge-bg);
+    border: 1px solid var(--green-badge-border);
+    border-radius: var(--radius-card);
+    padding: 12px 15px;
+    margin-bottom: 26px;
   }
-  .hero .eyebrow {
-    color: var(--fg-dim);
-    font-size: clamp(0.6rem, 2.6vw, 0.8rem);
-    letter-spacing: 2px;
+  .status-badge .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--green-dot);
+    box-shadow: 0 0 12px var(--green-dot);
+    animation: np-pulse 2.2s ease-in-out infinite;
+    flex: none;
+  }
+  .status-badge .status-text {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    color: var(--green-text);
     text-transform: uppercase;
   }
+
+  /* ---- Hero token counter ---- */
+  .hero { text-align: center; margin-bottom: 6px; }
+  .hero .eyebrow {
+    font-weight: 500;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    color: var(--label);
+    margin-bottom: 18px;
+  }
   .hero .token-num {
-    font-size: clamp(2.1rem, 11vw, 6.6rem);
-    line-height: 1.02;
+    font-family: var(--font-mono);
     font-weight: 700;
-    color: var(--hero);
-    letter-spacing: -1px;
-    margin: 6px 0 2px;
-    text-shadow: 0 0 22px var(--accent-glow);
+    font-size: clamp(1.55rem, 7.4vw, 2.1rem);  /* max keeps the 22-digit figure to one desktop line */
+    letter-spacing: -0.02em;
+    color: var(--red-hero);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+    text-shadow: 0 0 30px rgba(255, 60, 50, 0.35);
     word-break: break-all;
   }
   .hero .token-label {
-    color: var(--fg-dim);
-    font-size: clamp(0.6rem, 2.6vw, 0.82rem);
-    letter-spacing: 1px;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    margin-top: 14px;
   }
   .hero .rate {
-    color: var(--accent-2);
-    font-size: clamp(0.6rem, 2.6vw, 0.8rem);
-    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--red-soft);
   }
+  .hero .rate .up { animation: np-pulse 1.4s infinite; }
 
-  /* ---- RGB-split glitch effect ---- */
-  .glitch { position: relative; }
-  .glitch::before, .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0; top: 0;
-    width: 100%;
-    overflow: hidden;
-    opacity: 0.8;
-    pointer-events: none;
+  /* ---- Headline stat rows (Energy / Water / CO₂) ---- */
+  .stat-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 26px 0;
   }
-  .glitch.go::before {
-    color: #00e5ff;
-    transform: translate(-3px, 1px);
-    clip-path: inset(0 0 55% 0);
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    padding: 14px 16px;
   }
-  .glitch.go::after {
-    color: var(--accent);
-    transform: translate(3px, -1px);
-    clip-path: inset(50% 0 0 0);
+  .stat-row .s-label { font-size: 0.875rem; color: var(--text-2); }
+  .stat-row .s-value {
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
+  .stat-row .s-value .unit { color: var(--muted); font-size: 0.75rem; }
 
-  /* ---- Control bar ---- */
+  /* ---- Returning-visitor guilt banner ---- */
+  .welcome-back {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-left: 3px solid var(--red-btn);
+    border-radius: var(--radius-card);
+    padding: 13px 15px;
+    margin: 0 0 18px;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+  .welcome-back strong { color: var(--red-soft); font-weight: 600; }
+  .welcome-back .tail { color: var(--muted); display: block; margin-top: 6px; font-size: 0.75rem; }
+
+  /* ---- Buttons ---- */
   .controls {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
-    justify-content: center;
-    padding: 14px 0 22px;
   }
-  button.btn, a.btn {
-    font-family: inherit;
+  .btn {
+    width: 100%;
     min-height: 46px;
-    padding: 0 16px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    background: var(--bg-card-2);
-    color: var(--fg);
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: transform 80ms ease, background 160ms ease, box-shadow 160ms ease;
+    background: transparent;
+    color: #e8d7d5;
+    border: 1px solid var(--border-2);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 15px 16px;
+    border-radius: var(--radius-btn);
+    transition: transform 80ms ease, background 160ms ease, border-color 160ms ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-  }
-  /* anchors styled as buttons need the box model + link resets buttons get for free */
-  a.btn {
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    text-decoration: none;
   }
-  button.btn:active, a.btn:active { transform: translateY(1px) scale(0.99); }
-  button.btn:hover, a.btn:hover { background: var(--border); color: var(--fg); }
-  button.btn.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #1a0000;
-    font-weight: 700;
-    box-shadow: 0 0 18px var(--accent-glow);
+  .btn:hover { background: rgba(255, 90, 77, 0.06); border-color: #4a2e2b; }
+  .btn:active { transform: translateY(1px) scale(0.995); }
+  .btn.primary {
+    background: var(--red-btn);
+    border-color: var(--red-btn);
+    color: var(--red-btn-text);
+    font-weight: 600;
   }
-  html.denial button.btn.primary { color: #022; }
-  button.btn.toggle {
-    border-color: var(--accent-2);
-    color: var(--accent-2);
-  }
+  .btn.primary:hover { background: #e04840; }
 
-  /* ---- Metric grid ---- */
+  /* ---- Metric grid (full telemetry, restyled) ---- */
+  .telemetry-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 30px 0 10px;
+  }
+  .telemetry-head h2 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+  .telemetry-head .tag {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: var(--label);
+    text-transform: uppercase;
+  }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 12px;
-    padding-bottom: 28px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 8px;
   }
   .card {
     position: relative;
-    background: linear-gradient(160deg, var(--bg-card), var(--bg-card-2));
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 14px 14px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    padding: 13px 15px 14px;
     overflow: hidden;
     cursor: help;
   }
-  .card::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0.5;
-  }
   .card .k-label {
-    color: var(--fg-dim);
-    font-size: 0.7rem;
-    letter-spacing: 0.5px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
@@ -354,46 +443,49 @@
   }
   .card .k-label .info {
     margin-left: auto;
-    border: 1px solid var(--fg-dim);
+    border: 1px solid var(--muted);
     border-radius: 50%;
-    width: 16px; height: 16px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.62rem;
-    color: var(--fg-dim);
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5625rem;
+    color: var(--muted);
     flex: none;
   }
   .card .k-value {
-    font-size: clamp(1.3rem, 5.5vw, 1.85rem);
-    color: var(--accent-2);
-    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
     word-break: break-word;
-    line-height: 1.1;
+    line-height: 1.15;
   }
-  .card .k-value.crit { color: var(--accent); }
+  .card .k-value.crit { color: var(--red-hero); }
   .card .k-sub {
-    color: var(--fg-dim);
+    color: var(--muted);
     font-size: 0.72rem;
     margin-top: 6px;
     min-height: 1em;
   }
-
-  /* tooltip / methodology footnote */
   .card .tip {
     position: absolute;
-    left: 10px; right: 10px; bottom: 10px;
-    background: #000;
-    border: 1px solid var(--accent-2);
-    color: var(--fg);
-    font-size: 0.68rem;
+    left: 8px; right: 8px; bottom: 8px;
+    background: #150a0b;
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    font-size: 0.7rem;
     line-height: 1.4;
     padding: 8px 10px;
-    border-radius: 5px;
+    border-radius: 8px;
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 140ms ease, transform 140ms ease;
     pointer-events: none;
     z-index: 5;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
   }
   .card:hover .tip,
   .card.tip-open .tip {
@@ -401,113 +493,245 @@
     transform: translateY(0);
   }
 
-  /* returning-visitor guilt banner */
-  .welcome-back {
-    border: 1px solid var(--accent-2);
-    background: linear-gradient(160deg, var(--bg-card), var(--bg-card-2));
-    border-left: 3px solid var(--accent);
-    border-radius: 7px;
-    padding: 12px 14px;
-    margin: 4px 0 18px;
-    font-size: 0.78rem;
-    line-height: 1.55;
-    color: var(--fg);
+  /* ---- Carbon Offset card (merged offset + reforestation ledger) ---- */
+  .offset-card {
+    margin-top: 22px;
+    background: var(--green-card-bg);
+    border: 1px solid var(--green-card-border);
+    border-radius: 16px;
+    padding: 16px 16px 18px;
   }
-  .welcome-back strong { color: var(--accent-2); font-weight: 700; }
-  .welcome-back .tail { color: var(--fg-dim); display: block; margin-top: 6px; font-size: 0.72rem; }
-
-  /* offset / ASCII tree zone */
-  .offset-zone {
-    border: 1px dashed var(--border);
-    border-radius: 7px;
-    padding: 14px;
-    margin-bottom: 28px;
+  .offset-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
   }
-  .offset-zone h3 {
-    margin: 0 0 6px;
-    font-size: 0.8rem;
-    color: var(--fg-dim);
-    letter-spacing: 1px;
+  .offset-card .head .title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+  .offset-card .head .tag {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: var(--green-tag);
     text-transform: uppercase;
-    font-weight: 400;
   }
-  .offset-zone .count { color: var(--accent-2); }
+  .offset-card .copy {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  .offset-card .btn.primary { border-radius: 12px; }
+  .offset-card .ledger {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed #2c3a2d;
+  }
+  .offset-card .ledger .count {
+    font-family: var(--font-mono);
+    font-size: 1.625rem;
+    font-weight: 600;
+    color: var(--green-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .offset-card .ledger .note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.4;
+  }
   #forest {
-    font-size: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;             /* trees wrap onto new lines, no sideways scroll */
+    gap: 6px 12px;
+    align-items: flex-end;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     line-height: 1.05;
-    white-space: pre;
-    color: var(--good);
-    margin-top: 10px;
-    overflow-x: auto;
-    min-height: 1.2em;
+    color: var(--green-text);
+    margin-top: 12px;
+  }
+  #forest:empty { margin-top: 0; }
+  #forest .tree { white-space: pre; }
+  #forest .more {
+    align-self: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: var(--font-sans);
   }
 
-  /* scorecard output */
+  /* ---- Scorecard output ---- */
   #scorecard {
+    font-family: var(--font-mono);
     white-space: pre-wrap;
-    background: #000;
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    background: #100809;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
     padding: 14px;
     font-size: 0.72rem;
     line-height: 1.5;
-    color: var(--fg);
-    margin-bottom: 28px;
+    color: var(--text-2);
+    margin: 22px 0 0;
     display: none;
   }
   #scorecard.show { display: block; }
 
   /* ---- Footer ---- */
   footer.disclaimer {
-    color: var(--fg-dim);
-    font-size: 0.66rem;
+    font-size: 0.75rem;
+    color: var(--muted-2);
+    margin-top: 22px;
     line-height: 1.6;
-    border-top: 1px solid var(--border);
-    padding: 16px 0 26px;
-    text-align: center;
   }
+  footer.disclaimer .alarm { color: var(--red-soft); }
 
   /* ============================================================
-     NEWS TICKER
+     DENIAL MODE — a full separate screen. Everything is fine.
      ============================================================ */
-  .ticker {
+  .denial-screen {
     position: fixed;
-    left: 0; right: 0; bottom: 0;
-    height: 40px;
-    background: #000;
-    border-top: 2px solid var(--accent);
+    inset: 0;
+    z-index: 9000;
+    background: var(--denial-bg);
+    color: var(--denial-text);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 22px 24px;
+  }
+  .denial-screen[hidden] { display: none; }
+  .denial-screen .inner {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .denial-screen header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0 30px;
+  }
+  .denial-screen .brand { color: #dceee3; }
+  .denial-screen .brand .logo-mark {
+    background: transparent;
+    border-radius: 50%;
+    border: 1.5px solid var(--denial-accent);
+    color: var(--denial-value);
+    font-size: 0.75rem;
+  }
+  .denial-screen .serenity {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    color: var(--denial-label);
+  }
+  .denial-screen .centre {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .breathe-zone {
+    position: relative;
+    width: 150px;
+    height: 150px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  .breathe-zone .halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91, 191, 134, 0.28), transparent 70%);
+    animation: np-breathe 4.5s ease-in-out infinite;
+  }
+  .breathe-zone .ring {
+    position: absolute;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 1px solid rgba(127, 211, 160, 0.4);
+    animation: np-breathe 4.5s ease-in-out infinite;
+  }
+  .breathe-zone .check { font-size: 2.5rem; color: var(--denial-check); }
+  .denial-screen h1 {
+    margin: 0;
+    font-weight: 300;
+    font-size: 1.875rem;
+    letter-spacing: 0.02em;
+    color: var(--denial-text);
+  }
+  .denial-screen .withheld {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    color: var(--denial-label);
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+  .denial-stats {
+    width: 100%;
+    margin-top: 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border-radius: 14px;
     overflow: hidden;
-    z-index: 8000;
-    box-shadow: 0 -6px 20px rgba(0,0,0,0.6);
   }
-  .ticker .tag {
-    flex: none;
-    background: var(--accent);
-    color: #150000;
-    font-weight: 700;
-    height: 100%;
+  .denial-stats .row {
     display: flex;
-    align-items: center;
-    padding: 0 12px;
-    font-size: 0.72rem;
-    letter-spacing: 1px;
-    z-index: 2;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--denial-row-bg);
   }
-  html.denial .ticker .tag { color: #022; }
-  .ticker .track {
-    display: inline-flex;
-    white-space: nowrap;
-    will-change: transform;
-    animation: crawl 48s linear infinite;
-    font-size: 0.78rem;
-    color: var(--fg);
+  .denial-stats .row .l { font-size: 0.875rem; color: var(--denial-soft); }
+  .denial-stats .row .v { font-family: var(--font-mono); font-size: 0.9375rem; color: var(--denial-value); }
+  .denial-screen .body-copy {
+    font-size: 0.8125rem;
+    color: var(--denial-label);
+    line-height: 1.6;
+    margin: 28px 0 0;
+    max-width: 280px;
   }
-  .ticker .track span { padding: 0 28px; }
-  @keyframes crawl {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+  .denial-screen .return-btn {
+    flex: 0 0 auto;
+    margin-top: 24px;
+    width: 100%;
+    min-height: 46px;
+    cursor: pointer;
+    /* the one exit from denial: sticky so it is ALWAYS on screen, even when
+       a short viewport makes the rest of the screen scroll */
+    position: sticky;
+    bottom: 0;
+    background: #081109;
+    color: var(--denial-soft);
+    border: 1px solid var(--denial-border);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    padding: 15px 16px;
+    border-radius: var(--radius-btn);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .denial-screen .return-btn:focus-visible {
+    outline: 2px solid var(--denial-value);
+    outline-offset: 2px;
   }
 
   /* ============================================================
@@ -515,44 +739,34 @@
      ============================================================ */
   .cookie {
     position: fixed;
-    left: 12px; right: 12px; bottom: 52px;
+    left: 12px; right: 12px; bottom: 12px;
     max-width: 560px;
     margin: 0 auto;
-    background: var(--bg-card);
-    border: 1px solid var(--accent-2);
-    border-radius: 8px;
+    background: #150a0b;
+    border: 1px solid var(--border-2);
+    border-radius: 16px;
     padding: 14px 16px;
     z-index: 8500;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    font-size: 0.76rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    font-size: 0.8125rem;
     line-height: 1.5;
+    color: var(--text-2);
   }
   .cookie p { margin: 0 0 10px; }
   .cookie .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .cookie .row .btn { flex: 1 1 120px; }
+  .cookie .row .btn { flex: 1 1 120px; width: auto; }
   .cookie.hide { display: none; }
 
   /* ============================================================
      MOTION / RESPONSIVE
      ============================================================ */
-  @media (max-width: 560px) {
-    .grid { grid-template-columns: 1fr; }
-    .controls .btn { flex: 1 1 140px; }
-    .status-badge { font-size: 0.64rem; }
-    /* keep the enormous hero number to two lines (no stray trailing digit) */
-    .hero .token-num { font-size: clamp(1.5rem, 9vw, 2.3rem); }
-    /* soften heavy effects on small screens */
-    .alarm-glow { animation-duration: 4s; }
-  }
-
-  /* small screens: auto-soften shake amplitude handled in JS */
-
   @media (prefers-reduced-motion: reduce) {
     .ticker .track { animation: none; }
-    .alarm-glow { animation: none; opacity: 0.4; }
-    .status-badge .dot { animation: none; }
-    .glitch.go::before, .glitch.go::after { display: none; }
-    body { transform: none !important; }
+    .status-badge .dot,
+    .hero .rate .up,
+    .breathe-zone .halo,
+    .breathe-zone .ring { animation: none; }
+    .wrap { transform: none !important; }
   }
 
   .sr-only {
@@ -582,49 +796,83 @@
 </script>
 </head>
 <body>
-  <div class="crt-overlay" aria-hidden="true"></div>
-  <div class="alarm-glow" aria-hidden="true"></div>
 
-  <div class="wrap">
+  <!-- ======================= BREAKING TICKER ======================= -->
+  <div class="ticker" aria-hidden="true">
+    <div class="tag">▲ Breaking ·&nbsp;</div>
+    <div class="track" id="tickerTrack"></div>
+  </div>
+
+  <div class="wrap" id="dashboard">
     <!-- ======================= TOP BAR ======================= -->
     <header class="topbar">
       <div class="brand">
-        <span class="logo glitch" data-text="NominalOps">NominalOps</span><span class="tm">™</span>
-        <span class="sub">Sustainability Assurance Platform · Tier&nbsp;IV</span>
+        <span class="logo-mark" aria-hidden="true">N</span>
+        <span>NominalOps™</span>
       </div>
-      <div class="spacer"></div>
-      <div class="status-badge" id="statusBadge" title="System health is unrelated to planetary health.">
-        <span class="dot"></span> <span id="statusText">ALL SYSTEMS NOMINAL</span>
-      </div>
+      <span class="tier-pill">TIER IV</span>
     </header>
+
+    <!-- ======================= NOMINAL BADGE ======================= -->
+    <div class="status-badge" id="statusBadge" title="System health is unrelated to planetary health.">
+      <span class="dot"></span>
+      <span class="status-text" id="statusText">ALL SYSTEMS NOMINAL</span>
+    </div>
 
     <!-- ======================= HERO ======================= -->
     <section class="hero">
-      <div class="eyebrow">Cumulative Tokens Inferred · Global · Live</div>
-      <div id="tokenNum" class="token-num glitch" data-text="0">0</div>
-      <div class="token-label">TOKENS CONSUMED SINCE THE DAWN OF TIME (UTC)</div>
-      <div id="rate" class="rate">▲ ingesting at —/sec</div>
+      <div class="eyebrow">Cumulative tokens inferred · global · live</div>
+      <div id="tokenNum" class="token-num">0</div>
+      <div class="token-label">consumed since the dawn of time (UTC)</div>
+      <div id="rate" class="rate"><span class="up">▲</span>&nbsp;ingesting at —/sec</div>
     </section>
 
     <!-- ======================= RETURNING-VISITOR GUILT ======================= -->
     <section class="welcome-back" id="welcomeBack" hidden aria-live="polite"></section>
 
+    <!-- ======================= HEADLINE STATS ======================= -->
+    <section class="stat-rows" aria-label="Headline environmental toll">
+      <div class="stat-row">
+        <span class="s-label">Energy drawn</span>
+        <span class="s-value"><span id="statEnergy">—</span> <span class="unit">GWh</span></span>
+      </div>
+      <div class="stat-row">
+        <span class="s-label">Water evaporated</span>
+        <span class="s-value"><span id="statWater">—</span> <span class="unit">ML</span></span>
+      </div>
+      <div class="stat-row">
+        <span class="s-label">CO₂ emitted</span>
+        <span class="s-value"><span id="statCo2">—</span> <span class="unit">t</span></span>
+      </div>
+    </section>
+
     <!-- ======================= CONTROLS ======================= -->
     <section class="controls" id="controls">
-      <button id="promptBtn" class="btn primary">⚡ SEND A PROMPT</button>
-      <button id="offsetBtn" class="btn">🌱 Buy Carbon Offset</button>
-      <button id="modeBtn" class="btn toggle">☮ Switch to Denial Mode</button>
+      <button id="promptBtn" class="btn primary">⚡ Send a Prompt</button>
+      <button id="modeBtn" class="btn">Switch to Denial Mode</button>
+      <a id="gameBtn" class="btn" href="game.html">Defend the Datacentre →</a>
       <button id="shareBtn" class="btn">📋 Share Your Damage</button>
-      <a id="gameBtn" class="btn" href="game.html">🐻‍❄️ Defend the Datacentre</a>
     </section>
 
     <!-- ======================= METRIC GRID ======================= -->
+    <div class="telemetry-head">
+      <h2>Full Telemetry</h2>
+      <span class="tag">Certified · ±100%</span>
+    </div>
     <section class="grid" id="grid" aria-label="Environmental toll metrics"></section>
 
-    <!-- ======================= OFFSET ZONE ======================= -->
-    <section class="offset-zone" id="offsetZone">
-      <h3>Voluntary Reforestation Ledger — <span class="count" id="treeCount">0</span> tree(s) planted</h3>
-      <div style="font-size:0.7rem;color:var(--fg-dim)">Net climate impact: unchanged. Thank you for your contribution.</div>
+    <!-- ======================= CARBON OFFSET ======================= -->
+    <section class="offset-card" id="offsetZone">
+      <div class="head">
+        <span class="title">Carbon Offset</span>
+        <span class="tag">Voluntary Ledger</span>
+      </div>
+      <div class="copy">Each offset plants one tree. Net climate impact remains, at all times, unchanged.</div>
+      <button id="offsetBtn" class="btn primary">🌱 Buy Carbon Offset</button>
+      <div class="ledger">
+        <span class="count" id="treeCount">0</span>
+        <span class="note"><span id="treeNoun">trees</span> planted<br />impact unchanged</span>
+      </div>
       <div id="forest" aria-hidden="true"></div>
     </section>
 
@@ -633,10 +881,44 @@
 
     <!-- ======================= FOOTER ======================= -->
     <footer class="disclaimer">
-      Figures accurate to within ±100%. Full methodology available on request (it is not).<br />
-      NominalOps™ is a wholly owned subsidiary of itself. This dashboard is load-bearing. Do not look away.<br />
+      Figures accurate to within ±100%. Full methodology available on request (it is not).
+      NominalOps™ is a wholly owned subsidiary of itself. This dashboard is load-bearing.
+      <span class="alarm">Do not look away.</span><br />
       © <span id="year"></span> NominalOps Assurance Division. Status re-certified NOMINAL by a committee that has since left the building.
     </footer>
+  </div>
+
+  <!-- ======================= DENIAL MODE SCREEN ======================= -->
+  <div class="denial-screen" id="denialScreen" hidden role="dialog" aria-modal="true" aria-label="Denial Mode">
+    <div class="inner">
+      <header>
+        <div class="brand">
+          <span class="logo-mark" aria-hidden="true">N</span>
+          <span>NominalOps™</span>
+        </div>
+        <span class="serenity">SERENITY</span>
+      </header>
+
+      <div class="centre">
+        <div class="breathe-zone" aria-hidden="true">
+          <span class="halo"></span>
+          <span class="ring"></span>
+          <span class="check">✓</span>
+        </div>
+        <h1>Everything is fine.</h1>
+        <div class="withheld">Figures withheld for your comfort</div>
+
+        <div class="denial-stats">
+          <div class="row"><span class="l">Energy drawn</span><span class="v">— nominal</span></div>
+          <div class="row"><span class="l">Water evaporated</span><span class="v">— nominal</span></div>
+          <div class="row"><span class="l">CO₂ emitted</span><span class="v">— nominal</span></div>
+        </div>
+
+        <p class="body-copy">You are not looking at anything. There is nothing to see. The trees are, as ever, fine.</p>
+      </div>
+
+      <button class="return-btn" id="returnBtn">Return to reality</button>
+    </div>
   </div>
 
   <!-- ======================= COOKIE BANNER ======================= -->
@@ -646,12 +928,6 @@
       <button class="btn primary" id="cookieA">Accept</button>
       <button class="btn" id="cookieB">Accept</button>
     </div>
-  </div>
-
-  <!-- ======================= NEWS TICKER ======================= -->
-  <div class="ticker" aria-hidden="true">
-    <div class="tag">BREAKING</div>
-    <div class="track" id="tickerTrack"></div>
   </div>
 
   <p class="sr-only" aria-live="polite" id="srStatus"></p>
@@ -728,6 +1004,7 @@
   const C = {
     LITRES_PER_TOKEN:        0.0000412,     // water "boiled"
     LITRES_PER_OLYMPIC_POOL: 2_500_000,
+    KWH_PER_TOKEN:           0.0000029,     // energy "drawn" (headline stat)
     BEARS_PER_TOKEN:         2.7e-12,        // displaced
     BEARS_SWEATING_RATIO:    0.63,
     PENGUINS_PER_TOKEN:      4.1e-12,        // inconvenienced
@@ -906,8 +1183,11 @@
   /* ============================================================
      RENDER LOOP (requestAnimationFrame)
      ============================================================ */
-  const tokenNumEl = document.getElementById("tokenNum");
-  const rateEl     = document.getElementById("rate");
+  const tokenNumEl  = document.getElementById("tokenNum");
+  const rateEl      = document.getElementById("rate");
+  const statEnergy  = document.getElementById("statEnergy");
+  const statWater   = document.getElementById("statWater");
+  const statCo2     = document.getElementById("statCo2");
 
   function frame(now) {
     const dt = Math.min(0.1, (now - lastTs) / 1000); // seconds, clamped
@@ -926,10 +1206,13 @@
     displayRate += ((delta / dt) - displayRate) * Math.min(1, dt * 4);
 
     // hero
-    const heroStr = fmt(tokens);
-    tokenNumEl.textContent = heroStr;
-    tokenNumEl.setAttribute("data-text", heroStr);
-    rateEl.textContent = "▲ ingesting at " + abbr(displayRate) + "/sec";
+    tokenNumEl.textContent = fmt(tokens);
+    rateEl.innerHTML = '<span class="up">▲</span>&nbsp;ingesting at ' + abbr(displayRate) + "/sec";
+
+    // headline stats (GWh / ML / t — derived from the same master number)
+    statEnergy.textContent = abbr(tokens * C.KWH_PER_TOKEN / 1e6);          // kWh → GWh
+    statWater.textContent  = abbr(tokens * C.LITRES_PER_TOKEN / 1e6);       // L → ML
+    statCo2.textContent    = abbr(tokens * C.CO2_G_PER_TOKEN / 1e6);        // g → t
 
     // metrics
     for (const m of METRICS) {
@@ -943,34 +1226,9 @@
   requestAnimationFrame(frame);
 
   /* ============================================================
-     GLITCH JITTER on hero + heading (skipped if reduced motion)
+     SCREEN SHAKE (prompt feedback only)
      ============================================================ */
-  const glitchEls = document.querySelectorAll(".glitch");
-  function glitchTick() {
-    if (allowMotion && Math.random() < (smallScreen ? 0.18 : 0.4)) {
-      const el = glitchEls[Math.floor(Math.random() * glitchEls.length)];
-      el.classList.add("go");
-      setTimeout(() => el.classList.remove("go"), 90 + Math.random() * 120);
-    }
-    setTimeout(glitchTick, 700 + Math.random() * 1600);
-  }
-  if (allowMotion) glitchTick();
-
-  /* subtle CRT flicker */
-  function flickerTick() {
-    if (allowMotion) {
-      document.documentElement.style.setProperty(
-        "--flicker", (0.82 + Math.random() * 0.18).toFixed(3)
-      );
-    }
-    setTimeout(flickerTick, 90 + Math.random() * 130);
-  }
-  if (allowMotion) flickerTick();
-
-  /* ============================================================
-     SCREEN SHAKE
-     ============================================================ */
-  const SHAKE_AMP = smallScreen ? 3 : 7;
+  const SHAKE_AMP = smallScreen ? 3 : 6;
   function shake(ms) {
     if (!allowMotion) return;
     const end = performance.now() + ms;
@@ -1015,16 +1273,6 @@
   // slow autonomous drift so passive viewers still watch "nominal" degrade
   setInterval(escalateStatus, 16000);
 
-  /* auto screen-shake when a threshold "ticks over" */
-  let lastThreshold = Math.floor(tokens / 1e12);
-  setInterval(() => {
-    const th = Math.floor(tokens / 1e12);
-    if (th > lastThreshold) {
-      lastThreshold = th;
-      shake(260);
-    }
-  }, 1200);
-
   /* ============================================================
      WEB AUDIO — alarm beep (no files)
      ============================================================ */
@@ -1053,7 +1301,7 @@
     if (!allowMotion) return;
     const f = document.createElement("div");
     f.style.cssText =
-      "position:fixed;inset:0;z-index:9500;pointer-events:none;background:var(--accent);opacity:0.55;transition:opacity 420ms ease;";
+      "position:fixed;inset:0;z-index:9500;pointer-events:none;background:#d13b34;opacity:0.5;transition:opacity 420ms ease;";
     document.body.appendChild(f);
     requestAnimationFrame(() => { f.style.opacity = "0"; });
     setTimeout(() => f.remove(), 460);
@@ -1087,43 +1335,53 @@
   let trees = 0;
   const forestEl = document.getElementById("forest");
   const treeCountEl = document.getElementById("treeCount");
-  const offsetZone = document.getElementById("offsetZone");
-  const controlsEl = document.getElementById("controls");
-  const narrowMQ = window.matchMedia("(max-width: 560px)");
-  let zoneMoved = false;
+  const treeNounEl = document.getElementById("treeNoun");
 
   document.getElementById("offsetBtn").addEventListener("click", () => {
     trees += 1;
-    treeCountEl.textContent = trees;
-    // render a row of sad little trees (cap visual at 24 to avoid overflow)
-    const shown = Math.min(trees, 24);
-    const lines = TREE.map(() => "");
-    for (let i = 0; i < shown; i++) {
-      TREE.forEach((row, r) => { lines[r] += row + " "; });
+    treeCountEl.textContent = trees.toLocaleString("en-US");
+    treeNounEl.textContent = trees === 1 ? "tree" : "trees";
+    // one sad tree per block; the flex container wraps them onto new lines
+    // (cap the visual at 24 so the card doesn't grow unbounded)
+    if (trees <= 24) {
+      const t = document.createElement("span");
+      t.className = "tree";
+      t.textContent = TREE.join("\n");
+      forestEl.appendChild(t);
+    } else {
+      let more = forestEl.querySelector(".more");
+      if (!more) {
+        more = document.createElement("span");
+        more.className = "more";
+        forestEl.appendChild(more);
+      }
+      more.textContent = "…and " + (trees - 24) + " more, somewhere.";
     }
-    forestEl.textContent = lines.join("\n") + (trees > 24 ? "\n…and " + (trees - 24) + " more, somewhere." : "");
-
-    // On narrow screens the ledger sits far below the fold, so the planted
-    // tree is invisible. Move it directly beneath the buttons on first click.
-    if (narrowMQ.matches && !zoneMoved) {
-      controlsEl.after(offsetZone);
-      zoneMoved = true;
-      offsetZone.scrollIntoView({ behavior: allowMotion ? "smooth" : "auto", block: "nearest" });
-    }
-
     say("One (1) tree planted. Net impact: unchanged.");
   });
 
   /* ============================================================
-     TOGGLE: DENIAL MODE / DOOM MODE
+     DENIAL MODE — a whole separate screen now. Serenity awaits.
      ============================================================ */
+  const denialScreen = document.getElementById("denialScreen");
   const modeBtn = document.getElementById("modeBtn");
-  let denial = false;
+  const returnBtn = document.getElementById("returnBtn");
+
   modeBtn.addEventListener("click", () => {
-    denial = !denial;
-    document.documentElement.classList.toggle("denial", denial);
-    modeBtn.textContent = denial ? "⚠ Switch to Doom Mode" : "☮ Switch to Denial Mode";
-    say(denial ? "Denial Mode engaged. Everything is fine." : "Doom Mode engaged. Everything is as it was.");
+    denialScreen.hidden = false;
+    document.documentElement.classList.add("denial-open");
+    denialScreen.scrollTop = 0;
+    returnBtn.focus({ preventScroll: true });
+    say("Denial Mode engaged. Everything is fine.");
+  });
+  returnBtn.addEventListener("click", () => {
+    denialScreen.hidden = true;
+    document.documentElement.classList.remove("denial-open");
+    modeBtn.focus({ preventScroll: true });
+    say("Doom Mode engaged. Everything is as it was.");
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !denialScreen.hidden) returnBtn.click();
   });
 
   /* ============================================================
@@ -1193,21 +1451,22 @@
      NEWS TICKER — duplicated for seamless loop
      ============================================================ */
   const HEADLINES = [
-    "BREAKING: Glacier files for unemployment, cites 'lack of future'.",
-    "Penguins demand to speak to a manager; manager is also a penguin.",
-    "Datacenter cooling tower achieves spiritual enlightenment, evaporates.",
-    "Sad intern requests bigger shovel; request escalated, then mulched.",
-    "Polar bear seen updating LinkedIn to 'Open to relocation'.",
-    "Quarterly report: planet down 4%, shareholder value up 11%, synergy stable.",
-    "Sea level edges higher; coastline described as 'a living document'.",
-    "Calculator, idle for years, asked to comment. Declines.",
-    "Methodology team reassigned to vibes department, effective immediately.",
-    "Heat death of universe now offered as a premium offset package.",
-    "GPU thermal reading officially upgraded from 'YES' to 'YES, ABSOLUTELY'.",
-    "Status badge re-certified NOMINAL by a committee that has left the building.",
+    "CONSUMPTION EXCEEDS EVERY PRIOR RECORD · AGAIN",
+    "Glacier files for unemployment, cites 'lack of future'",
+    "Penguins demand to speak to a manager; manager is also a penguin",
+    "Datacenter cooling tower achieves spiritual enlightenment, evaporates",
+    "Sad intern requests bigger shovel; request escalated, then mulched",
+    "Polar bear seen updating LinkedIn to 'Open to relocation'",
+    "Quarterly report: planet down 4%, shareholder value up 11%, synergy stable",
+    "Sea level edges higher; coastline described as 'a living document'",
+    "Calculator, idle for years, asked to comment. Declines",
+    "Methodology team reassigned to vibes department, effective immediately",
+    "Heat death of universe now offered as a premium offset package",
+    "GPU thermal reading officially upgraded from 'YES' to 'YES, ABSOLUTELY'",
+    "Status badge re-certified NOMINAL by a committee that has left the building",
   ];
   const track = document.getElementById("tickerTrack");
-  const oneSet = HEADLINES.map(h => "<span>" + h + " ◆</span>").join("");
+  const oneSet = HEADLINES.map(h => "<span>" + h + " ▲</span>").join("");
   track.innerHTML = oneSet + oneSet; // two copies → -50% translate loops seamlessly
 
   /* ============================================================

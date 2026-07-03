@@ -22,8 +22,9 @@ python3 -m http.server 8000
 - A second, per-session counter: *since you opened this tab, YOU personally are responsible for…*
 - **Persistent lifetime guilt** via `localStorage` — the dashboard remembers you across visits.
 - An escalating-denial status badge that degrades the meaning of "nominal" while staying defiantly green.
-- Glitchy doom aesthetic: CRT scanlines, RGB-split glitches, pulsing red alarm glow, screen-shake.
-- Interactivity: **Send a Prompt** (spikes everything + WebAudio alarm), **Buy Carbon Offset** (plants one sad ASCII tree, changes nothing), **Denial/Doom mode** toggle, tap/hover methodology tooltips, and a copyable damage scorecard.
+- Polished "enterprise doom" aesthetic (IBM Plex Sans/Mono, dark hazard-red UI) — a credible-looking corporate dashboard whose *content* is the joke.
+- Interactivity: **Send a Prompt** (spikes everything + WebAudio alarm + screen-shake), **Buy Carbon Offset** (plants one sad ASCII tree, changes nothing), tap/hover methodology tooltips, and a copyable damage scorecard.
+- **Denial Mode** — a dedicated serenity screen: everything goes calm sage-green, all figures are withheld for your comfort.
 - Mobile-first, fully responsive, and respects `prefers-reduced-motion`.
 
 ## Deploying
