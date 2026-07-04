@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Datacentre Defence™ · A NominalOps Containment Exercise</title>
-<meta name="description" content="Repel the climate. Protect the inference. A satirical tower-defence sideshow from NominalOps™ — drop GPU shards to hold back the polar bears." />
+<title>Datacentre Defence™: Bear Market · A NominalOps Containment Exercise</title>
+<meta name="description" content="Zap the climate. Protect the inference. A satirical whack-a-mole/idle hybrid from NominalOps™ — polar bears besiege the datacentre and you are the perimeter." />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <link rel="canonical" href="https://nominalops.com/game.html" />
 
@@ -15,8 +15,8 @@
 <!-- Open Graph / social link previews. -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="NominalOps™" />
-<meta property="og:title" content="Datacentre Defence™ · Repel the Climate. Protect the Inference." />
-<meta property="og:description" content="A satirical tower-defence sideshow from NominalOps™. Burn energy to defend an energy-guzzling data centre from the bears your energy use displaced." />
+<meta property="og:title" content="Datacentre Defence™: Bear Market · Zap the Climate. Protect the Inference." />
+<meta property="og:description" content="A satirical whack-a-mole/idle hybrid from NominalOps™. The climate keeps arriving in bear form. Contain it manually, then buy your way out of manual labour." />
 <meta property="og:url" content="https://nominalops.com/game.html" />
 <meta property="og:image" content="https://nominalops.com/og.png" />
 <meta property="og:image:type" content="image/png" />
@@ -29,9 +29,9 @@
 
 <style>
   /* ============================================================
-     DESIGN TOKENS — shared "enterprise doom" palette (see index.html
-     and the mobile design handoff). Restyle only: game mechanics in
-     the script below are untouched.
+     DESIGN TOKENS — shared "enterprise doom" palette (see index.html).
+     Same system as the previous tower-defence build; the game behind
+     it is new (whack-a-mole rounds + idle upgrade meta).
      ============================================================ */
   :root {
     --bg-0: #070405;
@@ -55,8 +55,8 @@
     --green-dot: #6ddb85;
     --green-tag: #7fbf8e;
 
-    --frost: #6fd2ff;       /* coolant blue — projectiles & chills */
-    --cool-btn: #2f6fb0;    /* the one deliberate non-red accent */
+    --frost: #6fd2ff;       /* coolant blue — zaps & chills */
+    --amber: #ffb454;
 
     --font-sans: "IBM Plex Sans", system-ui, sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -93,17 +93,18 @@
   @keyframes np-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 94% { opacity: 0.4; } 96% { opacity: 1; } }
 
   /* ============================================================
-     LAYOUT
+     LAYOUT — portrait-first; a single column that also reads fine
+     on desktop (arena capped, shop beside it never needed).
      ============================================================ */
   .wrap {
-    max-width: 1100px;
+    max-width: 560px;
     margin: 0 auto;
-    padding: 0 14px 40px;
+    padding: 0 12px 40px;
     position: relative;
     z-index: 10;
   }
 
-  /* ---- Top bar: back chevron · centered title · wave tag ---- */
+  /* ---- Top bar: back chevron · centered title · round tag ---- */
   header.topbar {
     display: flex;
     align-items: center;
@@ -130,14 +131,14 @@
   .back-chevron:hover { background: var(--card-bg); }
   .game-title {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     color: var(--red-soft);
     text-align: center;
     text-transform: uppercase;
   }
-  .wave-tag {
+  .round-tag {
     flex: none;
     min-width: 34px;
     text-align: right;
@@ -147,184 +148,208 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---- HUD: stat cards ---- */
+  /* ---- HUD: four compact stat cards ---- */
   .hud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px 0 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 10px 0 8px;
   }
   .hud .stat {
-    flex: 1 1 100px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 10px;
-    padding: 8px 12px;
+    padding: 6px 8px;
+    min-width: 0;
   }
   .hud .stat .label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 0.5625rem;
-    letter-spacing: 0.14em;
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .hud .stat .value {
+    display: block;
     font-family: var(--font-mono);
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-strong);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .hud .stat .value.kwh { color: var(--green-dot); }
-  .hud .stat .value.crit { color: var(--red-hero); }
+  .hud .stat .value.combo { color: var(--amber); }
+  .hud .stat .value.crit { color: var(--red-hero); animation: np-pulse 0.8s infinite; }
 
-  /* ---- Tower picker bar ---- */
-  .picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 2px 0 12px;
-  }
-  .tower-card {
-    position: relative;
-    flex: 1 1 130px;
-    min-width: 120px;
-    text-align: left;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 9px 10px 10px;
-    cursor: pointer;
-    color: var(--text);
-    transition: transform 80ms ease, border-color 140ms ease, box-shadow 140ms ease;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .tower-card:active { transform: translateY(1px) scale(0.99); }
-  .tower-card.selected {
-    border-color: var(--red-soft);
-    box-shadow: 0 0 16px rgba(255, 90, 77, 0.3);
-  }
-  .tower-card.cant-afford { opacity: 0.45; }
-  .tower-card .tc-top {
-    display: flex; align-items: center; gap: 7px;
-    margin-bottom: 5px;
-  }
-  .tower-card .tc-emoji { font-size: 1.15rem; }
-  .tower-card .tc-name {
-    font-family: var(--font-mono);
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
-  }
-  .tower-card .tc-cost {
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-size: 0.74rem; color: var(--green-tag); font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-  .tower-card .tc-desc {
-    font-size: 0.625rem; line-height: 1.35; color: var(--muted);
-  }
-  .tower-card .tc-cd {
-    position: absolute; inset: 0;
-    background: rgba(7, 4, 5, 0.72);
-    border-radius: 10px;
-    display: none;
-    align-items: center; justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 0.9rem; color: var(--frost);
-    pointer-events: none;
-  }
-  .tower-card.cooling .tc-cd { display: flex; }
-
-  /* ---- Rotate nudge (portrait phones only; the grid is a wide 9:5) ---- */
-  .rotate-hint {
-    display: none;                 /* shown only in the portrait media query below */
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 10px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: var(--card-bg);
-    color: var(--red-softer);
-    font-size: 0.7rem;
-    line-height: 1.4;
-    letter-spacing: 0.02em;
-  }
-  .rotate-hint .ico { font-size: 1.05rem; flex: none; }
-  @media (orientation: portrait) and (max-width: 640px) {
-    .rotate-hint { display: flex; }
-  }
-
-  /* ---- Canvas frame ---- */
+  /* ---- Arena ---- */
   .stage {
     position: relative;
     border: 1px solid var(--card-border);
     border-radius: 14px;
     overflow: hidden;
-    background: radial-gradient(90% 70% at 50% 30%, #1a0c0c 0%, #0b0607 70%);
-    touch-action: manipulation;
+    background: radial-gradient(90% 70% at 50% 35%, #1a0c0c 0%, #0b0607 70%);
+    /* Gameplay surface: kill scrolling, pinch, double-tap zoom on it. */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  /* While a menu/end overlay is shown, give the stage room so the overlay
-     (title → … → start button) isn't clipped to the short scaled canvas on
-     narrow screens. No effect on desktop, where the canvas is already taller.
-     Removed during play so the stage hugs the canvas again. */
-  .stage.menu-open { min-height: 82vh; min-height: 82svh; }
-  canvas#field { display: block; width: 100%; height: auto; }
+  canvas#arena { display: block; width: 100%; height: auto; }
 
-  /* ---- Overlays: menu / win / lose ---- */
+  /* While a menu/shop overlay is shown, give the stage room so the overlay
+     content isn't cramped into the short scaled canvas on narrow screens.
+     Removed during play so the stage hugs the canvas again. */
+  .stage.menu-open { min-height: 78vh; min-height: 78svh; }
+
+  /* thermal-event treatment on the arena frame */
+  .stage.thermal {
+    border-color: #6e2020;
+    box-shadow: 0 0 24px rgba(255, 90, 77, 0.35) inset, 0 0 18px rgba(255, 90, 77, 0.25);
+  }
+
+  /* ---- Overlays: boot / briefing / interstitial shop / terminated ---- */
   .overlay {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    align-items: center;
+    /* "safe centre": auto margins centre content that fits, but collapse to 0
+       when it overflows, so the top stays reachable and the overlay scrolls. */
+    justify-content: flex-start;
     text-align: center;
-    gap: 14px;
-    padding: 24px;
-    background: rgba(7, 4, 5, 0.88);
+    gap: 12px;
+    padding: 20px 16px;
+    background: rgba(7, 4, 5, 0.9);
     z-index: 5;
-    overflow-y: auto;            /* scroll as a fallback if content is taller */
+    overflow-y: auto;
+    /* overlays are UI, not gameplay — allow scrolling within them */
+    touch-action: pan-y;
   }
+  .overlay > :first-child { margin-top: auto; }
+  .overlay > :last-child { margin-bottom: auto; }
   .overlay[hidden] { display: none; }
-  /* lose state: the mock's "thermal event" treatment */
-  .overlay.thermal {
-    background: rgba(74, 10, 10, 0.86);
+  .overlay.thermal-bg {
+    background: rgba(74, 10, 10, 0.88);
     backdrop-filter: blur(2px);
   }
   .overlay h2 {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: clamp(1.1rem, 5vw, 1.8rem);
+    font-size: clamp(1.05rem, 5vw, 1.6rem);
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     color: var(--red-hero);
     text-transform: uppercase;
   }
-  .overlay.thermal h2 { animation: np-flicker 1.5s infinite; }
   .overlay h2.win { color: var(--green-dot); }
+  .overlay.thermal-bg h2 { animation: np-flicker 1.5s infinite; }
   .overlay p {
-    margin: 0; max-width: 520px;
-    font-size: clamp(0.75rem, 3vw, 0.875rem);
-    line-height: 1.5; color: var(--text-2);
+    margin: 0; max-width: 460px;
+    font-size: clamp(0.75rem, 3.2vw, 0.85rem);
+    line-height: 1.55; color: var(--text-2);
   }
-  .overlay.thermal p { color: #ffc9c5; }
-  .overlay .legend {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 8px 16px;
-    width: 100%;      /* definite width — auto-fit overflows a shrink-to-fit box */
-    max-width: 620px;
-    text-align: left;
-    font-size: 0.6875rem;
+  .overlay.thermal-bg p { color: #ffc9c5; }
+
+  .boot-log {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    line-height: 1.9;
     color: var(--muted);
-    margin-top: 4px;
+    text-align: left;
+    min-height: 7.6em;
+    letter-spacing: 0.03em;
   }
-  .overlay .legend b { color: var(--text); }
+  .boot-log .ok { color: var(--green-tag); }
+
+  /* round-report stat rows on interstitials */
+  .report {
+    width: 100%;
+    max-width: 400px;
+    display: grid;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .report .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+  }
+  .report .row .k { color: var(--muted); text-align: left; }
+  .report .row .v { color: var(--text-strong); font-weight: 600; white-space: nowrap; }
+  .report .row .v.plus { color: var(--green-dot); }
+
+  /* ---- Procurement (upgrade shop) ---- */
+  .shop {
+    width: 100%;
+    max-width: 460px;
+    display: grid;
+    gap: 7px;
+    text-align: left;
+  }
+  .shop-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 2px 2px 0;
+  }
+  .shop-head .bal { color: var(--green-dot); font-weight: 700; }
+  .upgrade {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 56px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+    color: var(--text);
+    text-align: left;
+    transition: transform 80ms ease, border-color 140ms ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .upgrade:active { transform: translateY(1px) scale(0.995); }
+  .upgrade:hover { border-color: #4a2e2b; }
+  .upgrade:disabled { opacity: 0.4; cursor: default; }
+  .upgrade .u-emoji { font-size: 1.4rem; flex: none; }
+  .upgrade .u-mid { flex: 1; min-width: 0; }
+  .upgrade .u-name {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .upgrade .u-lvl { color: var(--muted); font-weight: 400; font-size: 0.62rem; }
+  .upgrade .u-desc { font-size: 0.64rem; line-height: 1.4; color: var(--muted); }
+  .upgrade .u-cost {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.78rem; font-weight: 700;
+    color: var(--green-tag);
+    font-variant-numeric: tabular-nums;
+  }
+  .upgrade.prestige { border-color: #4a2e2b; background: rgba(255, 180, 84, 0.05); }
+  .upgrade.prestige .u-cost { color: var(--amber); }
 
   button.btn, a.btn {
-    min-height: 46px;
+    min-height: 48px;
     padding: 0 20px;
     border-radius: 13px;
     border: 1px solid var(--border-2);
@@ -351,13 +376,7 @@
   }
   button.btn.primary:hover { background: #e04840; }
 
-  .hint {
-    font-size: 0.6875rem;
-    color: var(--muted);
-    text-align: center;
-    padding: 10px 0 0;
-    line-height: 1.5;
-  }
+  .fine { font-size: 0.6rem; color: var(--muted-2); line-height: 1.5; max-width: 420px; }
 
   .disclaimer {
     font-size: 0.75rem;
@@ -367,18 +386,18 @@
     padding: 22px 4px 0;
   }
 
-  /* Toast banner for "INCOMING WAVE" etc. */
+  /* Toast banner for THERMAL EVENT etc. */
   .toast {
     position: absolute;
-    top: 12px; left: 50%;
+    top: 10px; left: 50%;
     transform: translateX(-50%);
     background: rgba(74, 20, 20, 0.92);
     border: 1px solid #6e2020;
     color: var(--red-softer);
-    padding: 7px 16px;
+    padding: 7px 14px;
     border-radius: 8px;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.66rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     z-index: 4;
@@ -386,6 +405,9 @@
     opacity: 0;
     transition: opacity 240ms ease;
     white-space: nowrap;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .toast.show { opacity: 1; }
 
@@ -396,15 +418,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .overlay.thermal h2 { animation: none; }
+    .overlay.thermal-bg h2, .hud .stat .value.crit { animation: none; }
     body { transform: none; }
   }
 
-  /* On narrow screens, top-align overlay content so a tall menu stays fully
-     scrollable (a vertically-centred overflow can leave the top unreachable). */
-  @media (max-width: 640px) {
-    .overlay { justify-content: flex-start; }
-  }
 </style>
 </head>
 <body>
@@ -412,80 +429,74 @@
     <!-- ======================= TOP BAR ======================= -->
     <header class="topbar">
       <a class="back-chevron" href="index.html" aria-label="Back to dashboard">‹</a>
-      <span class="game-title">Defend the Datacentre</span>
-      <span class="wave-tag" id="waveTag" aria-hidden="true">W·00</span>
+      <span class="game-title">Datacentre Defence™: Bear Market</span>
+      <span class="round-tag" id="roundTag" aria-hidden="true">R·01</span>
     </header>
 
     <!-- ======================= HUD ======================= -->
     <section class="hud" aria-label="Game status">
       <div class="stat">
-        <span class="label">kWh on hand</span>
-        <span class="value kwh" id="kwh">0</span>
+        <span class="label">kWh</span>
+        <span class="value kwh" id="hudKwh">0</span>
       </div>
       <div class="stat">
-        <span class="label">Wave</span>
-        <span class="value" id="waveNum">0 / 0</span>
+        <span class="label">Integrity</span>
+        <span class="value" id="hudIntegrity">100%</span>
       </div>
       <div class="stat">
-        <span class="label">Bears repelled</span>
-        <span class="value" id="kills">0</span>
+        <span class="label">Combo</span>
+        <span class="value combo" id="hudCombo">×1.0</span>
+      </div>
+      <div class="stat">
+        <span class="label">T-minus</span>
+        <span class="value" id="hudTimer">1:00</span>
       </div>
     </section>
 
-    <!-- ======================= TOWER PICKER ======================= -->
-    <section class="picker" id="picker" aria-label="Deployable GPU shards"></section>
-
-    <!-- ======================= PLAYFIELD ======================= -->
-    <p class="rotate-hint" role="note">
-      <span class="ico" aria-hidden="true">🔁</span>
-      Rotate your device to landscape for the full defence grid.
-    </p>
-
+    <!-- ======================= ARENA ======================= -->
     <div class="stage menu-open" id="stage">
-      <canvas id="field" width="900" height="500" aria-label="Defence grid"></canvas>
+      <canvas id="arena" width="480" height="560" aria-label="Containment perimeter"></canvas>
       <div class="toast" id="toast" aria-hidden="true"></div>
 
-      <!-- Start / instructions overlay -->
+      <!-- Briefing / boot overlay -->
       <div class="overlay" id="menuOverlay">
-        <h2>DATACENTRE DEFENCE™</h2>
+        <h2>BEAR MARKET</h2>
         <p>
-          Repel the climate. Protect the inference.<br />
-          Polar bears — displaced, understandably furious — march on your data
-          centre. Deploy GPU shards to hold the line. You pay for everything in
-          <b>kWh</b>, because the only thing that stops a climate problem is,
-          naturally, more energy.
+          The climate keeps arriving. Regrettably, it arrives in bear form, and
+          it is heading for the cooling intake. Tap each
+          <b>climate anomaly</b> 🐻‍❄️ before it reaches the datacentre.
+          Anomalies contained are metered in <b style="color:var(--green-dot)">kWh</b>,
+          redeemable for equipment that eventually taps the bears for you.
+          That's the business model.
         </p>
-        <div class="legend">
-          <div><b>🌭 FLARE-STACK</b> — flares off surplus kWh for you to collect. Build these first.</div>
-          <div><b>🟢 HAIKO-nano</b> — cheap, twitchy, fires a stream of tokens down its lane.</div>
-          <div><b>🧱 SERVER-RACK</b> — does nothing but absorb mauling. A load-bearing sacrifice.</div>
-          <div><b>🔵 SONNETTE-mid</b> — vents coolant; chills &amp; slows every bear in its row.</div>
-          <div><b>🟣 OPULENT-max</b> — ruinously expensive lane-clearing heat bloom. Worth it.</div>
-          <div><b>❄️ Coolant dump</b> — each lane has one. The first bear to reach the edge there is purged free; the second breaches the perimeter.</div>
+        <div class="boot-log" id="bootLog" aria-hidden="true"></div>
+        <button class="btn primary" id="startBtn">INITIATE CONTAINMENT · ROUND 1</button>
+        <p class="fine" id="menuFine">Consecutive containments build a combo multiplier. Missing resets it. A breach also resets it, plus everyone's confidence.</p>
+      </div>
+
+      <!-- Between-rounds overlay: report + procurement -->
+      <div class="overlay" id="shopOverlay" hidden>
+        <h2 id="shopTitle" class="win">ROUND CONTAINED</h2>
+        <p id="shopBody"></p>
+        <div class="report" id="report"></div>
+        <div class="shop" id="shop">
+          <div class="shop-head">
+            <span>Procurement portal</span>
+            <span>BAL <span class="bal" id="shopBal">0</span> kWh</span>
+          </div>
+          <div id="shopItems"></div>
         </div>
-        <button class="btn primary" id="startBtn">DEPLOY · BEGIN CONTAINMENT</button>
-        <p style="font-size:0.6rem">Click a shard, then a tile, to place it. Click flared kWh to bank it.</p>
+        <button class="btn primary" id="nextBtn">INITIATE ROUND 2</button>
+        <p class="fine">Purchases are final. All sales support further sales.</p>
       </div>
-
-      <!-- End-state overlay -->
-      <div class="overlay" id="endOverlay" hidden>
-        <h2 id="endTitle">PERIMETER BREACHED</h2>
-        <p id="endBody"></p>
-        <button class="btn primary" id="againBtn">RE-CERTIFY · PLAY AGAIN</button>
-        <a class="btn" href="index.html">← back to the dashboard</a>
-      </div>
-    </div>
-
-    <div class="hint" id="hint">
-      Select a shard above, then click a grid tile to deploy. Tap a flared
-      <span style="color:var(--green-dot)">kWh</span> blob to collect it. Press
-      <b>1–5</b> to quick-select shards, <b>Esc</b> to deselect.
     </div>
 
     <footer class="disclaimer">
-      No bears were harmed; they are conceptual. Energy expenditure depicted is
-      directionally accurate (it goes up). Datacentre Defence™ is a wholly
-      owned distraction of NominalOps™. This minigame is also load-bearing.
+      No bears were harmed; they are conceptual and unionising. Energy
+      expenditure depicted is directionally accurate (it goes up).
+      Datacentre Defence™: Bear Market is a wholly owned distraction of
+      NominalOps™. Progress is stored on your device and, like everything
+      else here, is not our liability.
     </footer>
   </div>
 
@@ -499,638 +510,502 @@
      CONFIG — everything balance-y lives up here, data-driven,
      in the spirit of the dashboard's METRICS array.
      ============================================================ */
-  const COLS = 9;
-  const ROWS = 5;
-  const CELL = 100;                 // logical canvas units per cell
-  const FIELD_W = COLS * CELL;      // 900
-  const FIELD_H = ROWS * CELL;      // 500
-  const HOME_X = 0;                 // left edge = the data centre
+  const W = 480, H = 560;             // logical canvas units
+  const CX = W / 2, CY = H / 2 + 10;  // datacentre centre
+  const DC_W = 150, DC_H = 108;       // datacentre slab
+  const DC_RADIUS = 86;               // bears connect at this distance
+  const ROUND_SECONDS = 60;
+  const BASE_INTEGRITY = 100;
+  const BREACH_DAMAGE = 12;           // integrity lost per bear that connects
 
-  const STARTING_KWH = 250;
-  const PASSIVE_KWH_PER_SEC = 5;    // slow trickle so you're never fully stuck
+  // 8 spawn hatches around the perimeter (clockwise from top).
+  const SPAWNS = [
+    { x: CX,        y: 54        },
+    { x: W - 70,    y: 118       },
+    { x: W - 46,    y: CY        },
+    { x: W - 70,    y: H - 118   },
+    { x: CX,        y: H - 50    },
+    { x: 70,        y: H - 118   },
+    { x: 46,        y: CY        },
+    { x: 70,        y: 118       }
+  ];
+
+  // Round pacing: interval between spawns shrinks within a round and
+  // across rounds; bear speed climbs likewise.
+  function spawnInterval(round, tFrac) {
+    const base = 2.0 * Math.pow(0.93, round - 1);
+    const withinRound = 1 - 0.45 * tFrac;             // → 55% of base by 0:00
+    const reg = Math.pow(1.13, upgrades.reg);          // Regulatory Capture
+    return Math.max(0.38, base * withinRound * reg);
+  }
+  function bearSpeed(round, tFrac) {
+    const base = 46 + 5 * (round - 1);
+    return base * (1 + 0.4 * tFrac) * (0.9 + Math.random() * 0.25);
+  }
+
+  const BEAR_KWH = 6;                 // base kWh per containment
+  const EMERGE_TIME = 0.45;           // hatch telegraph + pop-up
+  const COMBO_STEP = 0.1;             // multiplier grows by this per hit
+  const COMBO_MAX = 4;
+
+  // Thermal events: windows within the round when they may trigger.
+  const THERMAL_AT = [0.35, 0.72];    // round-fraction trigger points
+  const THERMAL_LEN = 5;              // seconds
+  const THERMAL_SPAWN_DIV = 2.6;      // spawn interval divided by this
+  const THERMAL_KWH_MULT = 2;
+
+  /* ---- Procurement catalogue (the idle meta) ---- */
+  const CATALOG = [
+    {
+      id: 'shard', emoji: '🧠', name: 'INFERENCE SHARD',
+      desc: lvl => '+' + (25 * (lvl + 1)) + ' kWh at the start of every round. The shard infers that you deserve money.',
+      cost: lvl => Math.round(80 * Math.pow(1.65, lvl)),
+      max: 12
+    },
+    {
+      id: 'cooling', emoji: '🧊', name: 'COOLING ARRAY',
+      desc: lvl => 'Integrity +25 (now ' + (BASE_INTEGRITY + 25 * (lvl + 1)) + '). The bears remain unmoved, but slower to matter.',
+      cost: lvl => Math.round(110 * Math.pow(1.6, lvl)),
+      max: 8
+    },
+    {
+      id: 'zapper', emoji: '🤖', name: 'AUTONOMOUS ZAPPER',
+      desc: lvl => lvl === 0
+        ? 'Auto-contains 1 anomaly every 5s. Your first direct report.'
+        : 'Faster autonomy: one zap every ' + zapperInterval(lvl + 1).toFixed(1) + 's.',
+      cost: lvl => Math.round(200 * Math.pow(1.75, lvl)),
+      max: 6
+    },
+    {
+      id: 'reg', emoji: '🏛️', name: 'REGULATORY CAPTURE',
+      desc: lvl => 'Anomalies arrive ' + Math.round((Math.pow(1.13, lvl + 1) - 1) * 100) + '% slower. The committee found in favour of the committee.',
+      cost: lvl => Math.round(150 * Math.pow(1.7, lvl)),
+      max: 5
+    }
+  ];
+  const PRESTIGE = {
+    emoji: '📣', name: 'ANNOUNCE NEW MODEL',
+    desc: n => 'Reset all equipment and remaining kWh. Permanent kWh output ×' + (1 + 0.5 * (n + 1)).toFixed(1) + '. The keynote applauds itself.',
+    cost: n => Math.round(1500 * Math.pow(2.2, n))
+  };
+  function zapperInterval(lvl) { return Math.max(1.6, 5.5 - 0.8 * lvl); }
 
   const REDUCED_MOTION = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ---- Deployable GPU shards (the "plants") ----
-  // dmg = per projectile/burst; rate = seconds between actions.
-  const TOWERS = [
-    {
-      id: 'flare', name: 'FLARE-STACK', emoji: '🌭', cost: 50, cooldown: 2.5,
-      hp: 60, role: 'producer',
-      produce: 25, produceEvery: 6, firstAfter: 2.5,
-      desc: 'Flares surplus kWh. Click the blobs to bank.',
-      color: '#ff8a5a'
-    },
-    {
-      id: 'haiko', name: 'HAIKO-nano', emoji: '🟢', cost: 50, cooldown: 2.5,
-      hp: 70, role: 'shooter',
-      dmg: 12, rate: 0.65, projSpeed: 520, projColor: '#6ddb85',
-      desc: 'Cheap rapid token stream down its lane.',
-      color: '#6ddb85'
-    },
-    {
-      id: 'rack', name: 'SERVER-RACK', emoji: '🧱', cost: 50, cooldown: 4,
-      hp: 380, role: 'wall',
-      desc: 'Pure blocker. Soaks claws so shards survive.',
-      color: '#8a6f6f'
-    },
-    {
-      id: 'sonnette', name: 'SONNETTE-mid', emoji: '🔵', cost: 150, cooldown: 5,
-      hp: 90, role: 'shooter',
-      dmg: 20, rate: 1.1, projSpeed: 460, projColor: '#6fd2ff',
-      slow: 0.45, slowTime: 2.4,     // chills bears it hits
-      desc: 'Coolant rounds: slows every bear they strike.',
-      color: '#6fd2ff'
-    },
-    {
-      id: 'opulent', name: 'OPULENT-max', emoji: '🟣', cost: 325, cooldown: 12,
-      hp: 120, role: 'burst',
-      dmg: 90, rate: 3.4, burstRadius: 150,
-      desc: 'Ruinous AoE heat bloom. Clears clusters.',
-      color: '#c081ff'
-    }
-  ];
-  const TOWER_BY_ID = Object.fromEntries(TOWERS.map(t => [t.id, t]));
+  /* ============================================================
+     PERSISTENCE — meta progress survives visits
+     ============================================================ */
+  const SAVE_KEY = 'nominalops-bearmarket-v1';
+  let kwh = 0;
+  let round = 1;
+  let prestiges = 0;
+  let lifetimeContained = 0;
+  let upgrades = { shard: 0, cooling: 0, zapper: 0, reg: 0 };
 
-  // ---- Bears (the "zombies") ----
-  const BEARS = {
-    cub:   { name: 'cub',         emoji: '🐻', hp: 70,  speed: 40, dmg: 18, kwh: 15, size: 46 },
-    bear:  { name: 'bear',        emoji: '🐻‍❄️', hp: 160, speed: 34, dmg: 28, kwh: 25, size: 58 },
-    ursa:  { name: 'ICE-CLAD URSA', emoji: '🐻‍❄️', hp: 420, speed: 24, dmg: 40, kwh: 45, size: 64, armor: true },
-    boss:  { name: 'APEX URSA',   emoji: '🐻‍❄️', hp: 1600, speed: 18, dmg: 80, kwh: 250, size: 88, boss: true }
-  };
+  function saveGame() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        kwh: Math.floor(kwh), round, prestiges, lifetimeContained, upgrades
+      }));
+    } catch (e) { /* private mode etc. — progress simply won't persist */ }
+  }
+  function loadGame() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      kwh = s.kwh || 0;
+      round = s.round || 1;
+      prestiges = s.prestiges || 0;
+      lifetimeContained = s.lifetimeContained || 0;
+      upgrades = Object.assign({ shard: 0, cooling: 0, zapper: 0, reg: 0 }, s.upgrades);
+      return true;
+    } catch (e) { return false; }
+  }
 
-  // ---- Waves: each wave is a list of {type, count, gap, delay} bursts ----
-  // gap = seconds between spawns within the burst; delay = seconds before burst starts.
-  const WAVES = [
-    [ { type: 'cub', count: 3, gap: 3.5, delay: 11 } ],
-    [ { type: 'cub', count: 5, gap: 1.8, delay: 1 }, { type: 'bear', count: 2, gap: 4, delay: 6 } ],
-    [ { type: 'bear', count: 4, gap: 3, delay: 1 }, { type: 'cub', count: 5, gap: 1.4, delay: 4 } ],
-    [ { type: 'bear', count: 5, gap: 2.6, delay: 1 }, { type: 'ursa', count: 1, gap: 1, delay: 8 } ],
-    [ { type: 'ursa', count: 2, gap: 6, delay: 1 }, { type: 'cub', count: 8, gap: 1.1, delay: 3 }, { type: 'bear', count: 4, gap: 2.4, delay: 10 } ],
-    [ { type: 'bear', count: 6, gap: 1.8, delay: 1 }, { type: 'ursa', count: 3, gap: 5, delay: 4 } ],
-    [ { type: 'cub', count: 10, gap: 0.9, delay: 1 }, { type: 'bear', count: 6, gap: 1.6, delay: 6 }, { type: 'ursa', count: 2, gap: 6, delay: 12 }, { type: 'boss', count: 1, gap: 1, delay: 22 } ]
-  ];
+  function prestigeMult() { return 1 + 0.5 * prestiges; }
+  function maxIntegrity() { return BASE_INTEGRITY + 25 * upgrades.cooling; }
 
   /* ============================================================
-     STATE
+     ROUND STATE
      ============================================================ */
-  let state = 'menu';               // menu | playing | won | lost
-  let kwh = STARTING_KWH;
-  let kills = 0;
-  let waveIndex = -1;               // index into WAVES while active
-  let towers = [];                  // placed shards: {def, col, row, hp, t}
-  let bears = [];                   // {def, x, row, hp, speed, slowUntil, t}
-  let projectiles = [];             // {x, y, vx, def, slow}
-  let blobs = [];                   // collectible kWh: {x, y, vy, amount, born, settled}
-  let effects = [];                 // transient visuals: {kind, x, y, r, born, life, color}
-  let spawnQueue = [];              // pending spawns: {type, at}
-  let selectedTowerId = null;
-  const cooldowns = {};             // towerId -> timestamp ready
-  let waveActive = false;
+  let state = 'menu';                 // menu | playing | shop
+  let integrity = BASE_INTEGRITY;
+  let timeLeft = ROUND_SECONDS;
+  let bears = [];                     // {spawn, x, y, phase, t, speed, dirX, dirY}
+  let effects = [];                   // transient visuals
+  let floaters = [];                  // rising text: {x, y, txt, color, born}
+  let streak = 0;                     // consecutive containments
+  let bestStreakRound = 0;
+  let roundKwh = 0;                   // earned this round (for the report)
+  let roundContained = 0;
+  let roundBreaches = 0;
+  let nextSpawnAt = 0;                // seconds-into-round timestamp
+  let roundClock = 0;                 // seconds elapsed this round
+  let thermalUntil = -1;              // roundClock end of active thermal event
+  let thermalFired = [];              // which THERMAL_AT indices have fired
+  let zapperNextAt = 0;
   let lastFrame = 0;
+  let loopRunning = false;
   let shakeUntil = 0;
-  let laneMowers = [];              // one-shot "emergency coolant dump" per row
-  let loopRunning = false;          // guards against double-scheduling the rAF loop
-  let waveTimer = null;             // pending "next wave" timeout, cleared on reset
+  let endedByBreach = false;
+
+  function comboMult() { return Math.min(COMBO_MAX, 1 + streak * COMBO_STEP); }
 
   /* ============================================================
      DOM
      ============================================================ */
-  const canvas = document.getElementById('field');
+  const canvas = document.getElementById('arena');
   const ctx = canvas.getContext('2d');
   const stage = document.getElementById('stage');
-  const picker = document.getElementById('picker');
-  const kwhEl = document.getElementById('kwh');
-  const waveEl = document.getElementById('waveNum');
-  const waveTagEl = document.getElementById('waveTag');
-  const killsEl = document.getElementById('kills');
+  const hudKwh = document.getElementById('hudKwh');
+  const hudIntegrity = document.getElementById('hudIntegrity');
+  const hudCombo = document.getElementById('hudCombo');
+  const hudTimer = document.getElementById('hudTimer');
+  const roundTag = document.getElementById('roundTag');
   const toastEl = document.getElementById('toast');
   const menuOverlay = document.getElementById('menuOverlay');
-  const endOverlay = document.getElementById('endOverlay');
-  const endTitle = document.getElementById('endTitle');
-  const endBody = document.getElementById('endBody');
+  const shopOverlay = document.getElementById('shopOverlay');
+  const shopTitle = document.getElementById('shopTitle');
+  const shopBody = document.getElementById('shopBody');
+  const shopBal = document.getElementById('shopBal');
+  const shopItems = document.getElementById('shopItems');
+  const reportEl = document.getElementById('report');
+  const nextBtn = document.getElementById('nextBtn');
   const srStatus = document.getElementById('srStatus');
+  const bootLog = document.getElementById('bootLog');
+  const menuFine = document.getElementById('menuFine');
 
   /* ============================================================
-     PICKER UI
+     BOOT LOG — fake provisioning theatre on the menu
      ============================================================ */
-  function buildPicker() {
-    picker.innerHTML = '';
-    TOWERS.forEach((t, i) => {
-      const el = document.createElement('button');
-      el.className = 'tower-card';
-      el.dataset.id = t.id;
-      el.innerHTML =
-        '<div class="tc-top">' +
-          '<span class="tc-emoji">' + t.emoji + '</span>' +
-          '<span class="tc-name">' + t.name + '</span>' +
-          '<span class="tc-cost">' + t.cost + '</span>' +
-        '</div>' +
-        '<div class="tc-desc">' + t.desc + '</div>' +
-        '<div class="tc-cd" aria-hidden="true">cooling…</div>';
-      el.addEventListener('click', () => selectTower(t.id));
-      picker.appendChild(el);
-    });
+  const BOOT_LINES = [
+    'Provisioning GPUs………………… <span class="ok">OK</span>',
+    'Ingesting the internet (again)… <span class="ok">OK</span>',
+    'Aligning incentives………………… <span class="ok">DEFERRED</span>',
+    'Calibrating bear detectors……… <span class="ok">OK</span>',
+    'Notifying shareholders…………… <span class="ok">PREEMPTIVELY</span>'
+  ];
+  function runBootLog() {
+    bootLog.innerHTML = '';
+    let i = 0;
+    (function next() {
+      if (i >= BOOT_LINES.length || state !== 'menu') return;
+      bootLog.innerHTML += BOOT_LINES[i++] + '<br>';
+      setTimeout(next, REDUCED_MOTION ? 0 : 320);
+    })();
   }
 
-  function selectTower(id) {
+  /* ============================================================
+     INPUT — pointerdown (fires immediately on touch; no 300ms
+     click delay, and touch-action:none on .stage kills double-tap
+     zoom & scroll during play).
+     ============================================================ */
+  stage.addEventListener('pointerdown', (e) => {
     if (state !== 'playing') return;
-    const def = TOWER_BY_ID[id];
-    if (kwh < def.cost) { flashHint("Not enough kWh for " + def.name); return; }
-    if (onCooldown(id)) return;
-    selectedTowerId = (selectedTowerId === id) ? null : id;
-    refreshPicker();
-  }
-
-  function onCooldown(id) { return (cooldowns[id] || 0) > performance.now(); }
-
-  function refreshPicker() {
-    [...picker.children].forEach(el => {
-      const id = el.dataset.id;
-      const def = TOWER_BY_ID[id];
-      el.classList.toggle('selected', id === selectedTowerId);
-      el.classList.toggle('cant-afford', kwh < def.cost);
-      const cooling = onCooldown(id);
-      el.classList.toggle('cooling', cooling);
-      if (cooling) {
-        const left = Math.ceil((cooldowns[id] - performance.now()) / 1000);
-        el.querySelector('.tc-cd').textContent = left + 's';
-      }
-    });
-  }
-
-  /* ============================================================
-     INPUT — placing shards & collecting kWh
-     ============================================================ */
-  function canvasPoint(evt) {
+    e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const src = evt.touches ? evt.touches[0] : evt;
-    const sx = (src.clientX - rect.left) / rect.width * FIELD_W;
-    const sy = (src.clientY - rect.top) / rect.height * FIELD_H;
-    return { x: sx, y: sy };
-  }
+    const scale = rect.width / W;
+    const px = (e.clientX - rect.left) / scale;
+    const py = (e.clientY - rect.top) / scale;
 
-  function onStageClick(evt) {
-    if (state !== 'playing') return;
-    const p = canvasPoint(evt);
+    // Hit radius: at least 48 CSS px of forgiveness, whatever the scale.
+    const hitR = Math.max(34, 48 / scale / 2 + 18);
 
-    // Priority 1: collect a kWh blob if clicked.
-    for (let i = blobs.length - 1; i >= 0; i--) {
-      const b = blobs[i];
-      if (Math.hypot(b.x - p.x, b.y - p.y) < 34) {
-        collectBlob(i);
-        return;
+    let best = null, bestD = Infinity;
+    for (const b of bears) {
+      if (b.phase === 'maul') continue;
+      const d = Math.hypot(b.x - px, b.y - py);
+      if (d < hitR + (b.phase === 'emerge' ? 6 : 0) && d < bestD) { best = b; bestD = d; }
+    }
+    if (best) {
+      containBear(best, false);
+    } else {
+      // A miss. The multiplier files for separation.
+      if (streak > 0) {
+        floaters.push({ x: px, y: py, txt: 'MISS', color: '#8a6f6f', born: roundClock });
       }
+      streak = 0;
+      spawnEffect('ring', px, py, 'rgba(138,111,111,0.5)', 20);
+      updateHud();
     }
-
-    // Priority 2: place the selected shard on a free tile.
-    if (!selectedTowerId) return;
-    const col = Math.floor(p.x / CELL);
-    const row = Math.floor(p.y / CELL);
-    if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return;
-    placeTower(selectedTowerId, col, row);
-  }
-
-  function placeTower(id, col, row) {
-    const def = TOWER_BY_ID[id];
-    if (kwh < def.cost || onCooldown(id)) return;
-    if (towers.some(t => t.col === col && t.row === row)) {
-      flashHint("Tile occupied."); return;
-    }
-    // producers drop their first kWh after `firstAfter`, not a full cycle later
-    const lastAct = (def.role === 'producer' && def.firstAfter != null)
-      ? def.firstAfter - def.produceEvery
-      : 0;
-    towers.push({ def, col, row, hp: def.hp, maxHp: def.hp, t: 0, lastAct });
-    kwh -= def.cost;
-    cooldowns[id] = performance.now() + def.cooldown * 1000;
-    selectedTowerId = null;
-    announce(def.name + " deployed at row " + (row + 1) + ", column " + (col + 1));
-    refreshPicker();
-  }
-
-  function collectBlob(i) {
-    const b = blobs[i];
-    kwh += b.amount;
-    spawnEffect('spark', b.x, b.y, b.amount > 30 ? '#ff8a5a' : '#6ddb85');
-    blobs.splice(i, 1);
-    updateHud();
-  }
+  });
+  // Belt-and-braces: some browsers still synthesise gestures from touch.
+  stage.addEventListener('touchstart', (e) => {
+    if (state === 'playing') e.preventDefault();
+  }, { passive: false });
+  stage.addEventListener('contextmenu', (e) => {
+    if (state === 'playing') e.preventDefault();
+  });
 
   /* ============================================================
-     SPAWNING & WAVES
+     BEARS
      ============================================================ */
-  function startWave(idx) {
-    waveIndex = idx;
-    waveActive = true;
-    spawnQueue = [];
-    const now = performance.now() / 1000;
-    WAVES[idx].forEach(burst => {
-      for (let i = 0; i < burst.count; i++) {
-        spawnQueue.push({ type: burst.type, at: now + burst.delay + i * burst.gap });
-      }
-    });
-    spawnQueue.sort((a, b) => a.at - b.at);
-    updateHud();
-    const final = idx === WAVES.length - 1;
-    showToast(final ? '⚠ FINAL WAVE — APEX URSA INBOUND' : 'INCOMING · WAVE ' + (idx + 1));
-    announce(final ? 'Final wave incoming.' : 'Wave ' + (idx + 1) + ' incoming.');
-  }
-
-  function spawnBear(type) {
-    const base = BEARS[type];
-    const row = Math.floor(Math.random() * ROWS);
+  function spawnBear() {
+    const spawn = SPAWNS[Math.floor(Math.random() * SPAWNS.length)];
+    const dx = CX - spawn.x, dy = CY - spawn.y;
+    const len = Math.hypot(dx, dy);
     bears.push({
-      def: base,
-      type,
-      x: FIELD_W + base.size,
-      row,
-      hp: base.hp,
-      maxHp: base.hp,
-      speed: base.speed,
-      slowUntil: 0,
-      slowFactor: 1,
-      t: Math.random() * 6,         // phase for the waddle
-      munching: null
+      x: spawn.x, y: spawn.y,
+      dirX: dx / len, dirY: dy / len,
+      speed: bearSpeed(round, roundClock / ROUND_SECONDS),
+      phase: 'emerge',                 // emerge → advance → (maul)
+      t: 0,
+      wob: Math.random() * 6.28
     });
   }
 
-  function tickSpawns(nowSec) {
-    while (spawnQueue.length && spawnQueue[0].at <= nowSec) {
-      spawnBear(spawnQueue.shift().type);
+  function containBear(b, auto) {
+    const idx = bears.indexOf(b);
+    if (idx === -1) return;
+    bears.splice(idx, 1);
+
+    let gain = BEAR_KWH * prestigeMult();
+    if (!auto) { streak++; gain *= comboMult(); }
+    if (thermalUntil > roundClock) gain *= THERMAL_KWH_MULT;
+    gain = Math.round(gain);
+    kwh += gain;
+    roundKwh += gain;
+    roundContained++;
+    lifetimeContained++;
+    bestStreakRound = Math.max(bestStreakRound, streak);
+
+    spawnEffect('zap', b.x, b.y, auto ? '#6fd2ff' : '#ffd76f', 30);
+    floaters.push({
+      x: b.x, y: b.y - 20,
+      txt: '+' + gain + (auto ? ' ⚙' : ''),
+      color: thermalUntil > roundClock ? '#ff8a5a' : '#6ddb85',
+      born: roundClock
+    });
+    updateHud();
+  }
+
+  function breach(b) {
+    const idx = bears.indexOf(b);
+    if (idx !== -1) bears.splice(idx, 1);
+    integrity -= BREACH_DAMAGE;
+    roundBreaches++;
+    streak = 0;
+    triggerShake();
+    spawnEffect('boom', b.x, b.y, '#ff5a4d', 46);
+    floaters.push({ x: b.x, y: b.y - 16, txt: '-' + BREACH_DAMAGE + '%', color: '#ff5a4d', born: roundClock });
+    announce('Anomaly connected. Integrity ' + Math.max(0, Math.round(integrity)) + ' percent.');
+    if (integrity <= 0) {
+      integrity = 0;
+      endedByBreach = true;
+      endRound();
+      return;
     }
-    // Wave clears when queue is empty AND all bears are down.
-    if (waveActive && spawnQueue.length === 0 && bears.length === 0) {
-      waveActive = false;
-      if (waveIndex >= WAVES.length - 1) {
-        endGame(true);
-      } else {
-        showToast('WAVE ' + (waveIndex + 1) + ' REPELLED · re-arming…');
-        announce('Wave ' + (waveIndex + 1) + ' repelled.');
-        waveTimer = setTimeout(() => { if (state === 'playing') startWave(waveIndex + 1); }, 4500);
-      }
-    }
+    updateHud();
   }
 
   /* ============================================================
      UPDATE
      ============================================================ */
-  function rowCenterY(row) { return row * CELL + CELL / 2; }
-  function colCenterX(col) { return col * CELL + CELL / 2; }
+  function update(dt) {
+    roundClock += dt;
+    timeLeft = Math.max(0, ROUND_SECONDS - roundClock);
+    const tFrac = Math.min(1, roundClock / ROUND_SECONDS);
 
-  function update(dt, nowSec) {
-    // Passive kWh trickle.
-    kwh += PASSIVE_KWH_PER_SEC * dt;
-
-    tickSpawns(nowSec);
-
-    // ---- Towers act ----
-    for (const tw of towers) {
-      tw.t += dt;
-      const def = tw.def;
-      if (def.role === 'producer') {
-        if (tw.t - tw.lastAct >= def.produceEvery) {
-          tw.lastAct = tw.t;
-          dropBlob(colCenterX(tw.col), rowCenterY(tw.row), def.produce);
-        }
-      } else if (def.role === 'shooter') {
-        const target = firstBearInRow(tw.row, colCenterX(tw.col));
-        if (target && tw.t - tw.lastAct >= def.rate) {
-          tw.lastAct = tw.t;
-          projectiles.push({
-            x: colCenterX(tw.col) + 26, y: rowCenterY(tw.row) - 6,
-            vx: def.projSpeed, def,
-            color: def.projColor
-          });
-        }
-      } else if (def.role === 'burst') {
-        const target = firstBearInRow(tw.row, colCenterX(tw.col));
-        if (target && tw.t - tw.lastAct >= def.rate) {
-          tw.lastAct = tw.t;
-          detonate(colCenterX(tw.col) + CELL, rowCenterY(tw.row), def);
-        }
-      }
-      // wall just sits there and suffers.
-    }
-
-    // ---- Projectiles ----
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-      const p = projectiles[i];
-      p.x += p.vx * dt;
-      if (p.x > FIELD_W + 40) { projectiles.splice(i, 1); continue; }
-      // hit first bear in path
-      const hit = bears.find(b => b.row === Math.floor(p.y / CELL) &&
-        Math.abs(b.x - p.x) < b.def.size * 0.5);
-      if (hit) {
-        damageBear(hit, p.def.dmg);
-        if (p.def.slow) {
-          hit.slowUntil = nowSec + p.def.slowTime;
-          hit.slowFactor = p.def.slow;
-          spawnEffect('frost', hit.x, rowCenterY(hit.row), '#6fd2ff');
-        }
-        spawnEffect('spark', p.x, p.y, p.color);
-        projectiles.splice(i, 1);
+    // Thermal events fire at fixed round fractions.
+    for (let i = 0; i < THERMAL_AT.length; i++) {
+      if (!thermalFired[i] && tFrac >= THERMAL_AT[i]) {
+        thermalFired[i] = true;
+        thermalUntil = roundClock + THERMAL_LEN;
+        stage.classList.add('thermal');
+        showToast('⚠ THERMAL EVENT · 2× kWh');
+        announce('Thermal event. Double energy for five seconds.');
       }
     }
+    if (thermalUntil > 0 && roundClock > thermalUntil && stage.classList.contains('thermal')) {
+      stage.classList.remove('thermal');
+    }
+    const thermal = thermalUntil > roundClock;
 
-    // ---- Bears march & maul ----
+    // Spawning.
+    if (roundClock >= nextSpawnAt) {
+      spawnBear();
+      let iv = spawnInterval(round, tFrac);
+      if (thermal) iv /= THERMAL_SPAWN_DIV;
+      nextSpawnAt = roundClock + iv;
+    }
+
+    // Autonomous zapper: contains the anomaly nearest the intake.
+    if (upgrades.zapper > 0 && roundClock >= zapperNextAt) {
+      zapperNextAt = roundClock + zapperInterval(upgrades.zapper);
+      let best = null, bestD = Infinity;
+      for (const b of bears) {
+        if (b.phase === 'maul') continue;
+        const d = Math.hypot(b.x - CX, b.y - CY);
+        if (d < bestD) { best = b; bestD = d; }
+      }
+      if (best) containBear(best, true);
+    }
+
+    // Bears advance.
     for (let i = bears.length - 1; i >= 0; i--) {
       const b = bears[i];
       b.t += dt;
-      // slow expiry
-      const factor = (b.slowUntil > nowSec) ? b.slowFactor : 1;
-
-      // Is there a shard directly in front (same cell) to chew?
-      const blocker = towerAt(Math.floor((b.x - b.def.size * 0.3) / CELL), b.row);
-      if (blocker && b.x - b.def.size * 0.3 <= colCenterX(blocker.col) + CELL * 0.42) {
-        b.munching = blocker;
-        blocker.hp -= b.def.dmg * dt;
-        if (blocker.hp <= 0) removeTower(blocker);
-      } else {
-        b.munching = null;
-        b.x -= b.speed * factor * dt;
+      if (b.phase === 'emerge') {
+        if (b.t >= EMERGE_TIME) b.phase = 'advance';
+        continue;
       }
-
-      if (b.x <= HOME_X + b.def.size * 0.2) {
-        if (laneMowers[b.row]) {
-          // First breach of this lane fires a one-shot coolant dump that
-          // purges every bear in the row. (The PvZ lawnmower, but frostier.)
-          laneMowers[b.row] = false;
-          purgeLane(b.row);
-        } else {
-          // Lane already spent its dump — the perimeter is breached.
-          endGame(false);
-          return;
-        }
+      b.x += b.dirX * b.speed * dt;
+      b.y += b.dirY * b.speed * dt;
+      if (Math.hypot(b.x - CX, b.y - CY) <= DC_RADIUS) {
+        breach(b);
+        if (state !== 'playing') return;   // breach() may end the round
       }
     }
 
-    // ---- Blobs settle / expire ----
-    for (let i = blobs.length - 1; i >= 0; i--) {
-      const b = blobs[i];
-      if (!b.settled) {
-        b.y += b.vy * dt;
-        b.vy = Math.min(b.vy + 320 * dt, 240);
-        if (b.y >= b.targetY) { b.y = b.targetY; b.settled = true; b.settledAt = nowSec; }
-      } else if (REDUCED_MOTION || nowSec - b.settledAt > 11) {
-        // Auto-collect for reduced-motion users, or if left too long.
-        kwh += b.amount;
-        spawnEffect('spark', b.x, b.y, '#6ddb85');
-        blobs.splice(i, 1);
-      }
-    }
+    // Floaters & effects age out.
+    floaters = floaters.filter(f => roundClock - f.born < 0.9);
+    effects = effects.filter(e => roundClock - e.born < e.life);
 
-    // ---- Effects age out ----
-    for (let i = effects.length - 1; i >= 0; i--) {
-      if (nowSec - effects[i].born > effects[i].life) effects.splice(i, 1);
-    }
-
+    if (timeLeft <= 0) { endRound(); return; }
     updateHud();
-    refreshPicker();
-  }
-
-  function firstBearInRow(row, fromX) {
-    let best = null;
-    for (const b of bears) {
-      if (b.row === row && b.x >= fromX - 20) {
-        if (!best || b.x < best.x) best = b;
-      }
-    }
-    return best;
-  }
-
-  function towerAt(col, row) {
-    return towers.find(t => t.col === col && t.row === row) || null;
-  }
-
-  function damageBear(b, dmg) {
-    // Armoured bears shrug off a slice of incoming damage.
-    if (b.def.armor) dmg *= 0.7;
-    b.hp -= dmg;
-    if (b.hp <= 0) killBear(b);
-  }
-
-  function killBear(b) {
-    const idx = bears.indexOf(b);
-    if (idx === -1) return;
-    bears.splice(idx, 1);
-    kills++;
-    dropBlob(b.x, rowCenterY(b.row), b.def.kwh, true);
-    spawnEffect('puff', b.x, rowCenterY(b.row), '#6fd2ff');
-    updateHud();
-  }
-
-  function purgeLane(row) {
-    // Wipe every bear in the lane and flash a coolant sweep across it.
-    // Bears removed this way are an emergency loss-saver, NOT a reward — they
-    // pay out no kWh and aren't counted as repelled (so it can't be farmed).
-    for (let i = bears.length - 1; i >= 0; i--) {
-      if (bears[i].row === row) bears.splice(i, 1);
-    }
-    spawnEffect('boom', FIELD_W / 2, rowCenterY(row), '#6fd2ff', FIELD_W / 2);
-    triggerShake();
-    showToast('⚠ EMERGENCY COOLANT DUMP · lane ' + (row + 1) + ' purged');
-    announce('Emergency coolant dump on lane ' + (row + 1) + '. That lane is now undefended.');
-  }
-
-  function detonate(x, y, def) {
-    spawnEffect('boom', x, y, '#c081ff', def.burstRadius);
-    triggerShake();
-    for (let i = bears.length - 1; i >= 0; i--) {
-      const b = bears[i];
-      if (Math.hypot(b.x - x, rowCenterY(b.row) - y) <= def.burstRadius) {
-        damageBear(b, def.dmg);
-      }
-    }
-  }
-
-  function removeTower(tw) {
-    const idx = towers.indexOf(tw);
-    if (idx !== -1) towers.splice(idx, 1);
-    spawnEffect('puff', colCenterX(tw.col), rowCenterY(tw.row), '#ff5a4d');
-  }
-
-  function dropBlob(x, y, amount, fromKill) {
-    const targetY = Math.min(y + (fromKill ? 0 : 40) + Math.random() * 30, FIELD_H - 26);
-    blobs.push({
-      x: x + (Math.random() * 30 - 15),
-      y: y - 10,
-      vy: fromKill ? -40 : 30,
-      targetY,
-      amount,
-      settled: false,
-      settledAt: 0
-    });
-  }
-
-  function spawnEffect(kind, x, y, color, r) {
-    effects.push({ kind, x, y, color, r: r || 26, born: performance.now() / 1000, life: kind === 'boom' ? 0.4 : 0.5 });
-  }
-
-  function triggerShake() {
-    if (REDUCED_MOTION) return;
-    shakeUntil = performance.now() + 220;
   }
 
   /* ============================================================
      RENDER
      ============================================================ */
-  function render(nowSec) {
-    ctx.clearRect(0, 0, FIELD_W, FIELD_H);
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    const thermal = thermalUntil > roundClock && state === 'playing';
 
-    // ground: alternating lane bands so the grid reads clearly
-    for (let r = 0; r < ROWS; r++) {
-      ctx.fillStyle = (r % 2 === 0) ? '#170d0d' : '#0f0808';
-      ctx.fillRect(0, r * CELL, FIELD_W, CELL);
-    }
-    // the data centre slab on the left edge
-    const grad = ctx.createLinearGradient(0, 0, 70, 0);
-    grad.addColorStop(0, 'rgba(209,59,52,0.25)');
-    grad.addColorStop(1, 'rgba(209,59,52,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 70, FIELD_H);
-
-    // one-shot lane coolant dumps, parked at the left edge while still armed
-    for (let r = 0; r < ROWS; r++) {
-      if (!laneMowers[r]) continue;
-      const cy = rowCenterY(r);
-      ctx.font = '26px serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('❄️', 22, cy);
-    }
-
-    // grid lines — hazard-red overlay; must stay clearly visible, players
-    // aim at tiles (the handoff's fainter grid was decorative only)
-    ctx.strokeStyle = 'rgba(255,90,77,0.18)';
+    // permafrost ground rings — faint radar sweep aesthetic
+    ctx.strokeStyle = thermal ? 'rgba(255,90,77,0.14)' : 'rgba(255,90,77,0.07)';
     ctx.lineWidth = 1;
-    for (let c = 0; c <= COLS; c++) {
-      ctx.beginPath(); ctx.moveTo(c * CELL, 0); ctx.lineTo(c * CELL, FIELD_H); ctx.stroke();
-    }
-    for (let r = 0; r <= ROWS; r++) {
-      ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(FIELD_W, r * CELL); ctx.stroke();
+    for (let r = 120; r <= 300; r += 60) {
+      ctx.beginPath(); ctx.arc(CX, CY, r, 0, Math.PI * 2); ctx.stroke();
     }
 
-    // hover preview when a shard is selected
-    if (selectedTowerId && hoverCell && state === 'playing') {
-      const def = TOWER_BY_ID[selectedTowerId];
-      const occupied = towers.some(t => t.col === hoverCell.col && t.row === hoverCell.row);
-      ctx.fillStyle = occupied ? 'rgba(255,90,77,0.18)' : 'rgba(255,138,90,0.16)';
-      ctx.fillRect(hoverCell.col * CELL, hoverCell.row * CELL, CELL, CELL);
-    }
-
-    // towers
-    for (const tw of towers) drawTower(tw);
-
-    // projectiles
-    for (const p of projectiles) {
-      ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.3;
-      ctx.beginPath(); ctx.arc(p.x - 10, p.y, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    // bears
-    for (const b of bears) drawBear(b, nowSec);
-
-    // kWh blobs
-    for (const b of blobs) drawBlob(b, nowSec);
-
-    // effects
-    for (const e of effects) drawEffect(e, nowSec);
+    drawSpawnHatches();
+    drawDatacentre(thermal);
+    for (const b of bears) drawBear(b);
+    for (const e of effects) drawEffect(e);
+    for (const f of floaters) drawFloater(f);
   }
 
-  function drawTower(tw) {
-    const cx = colCenterX(tw.col), cy = rowCenterY(tw.row);
-    const def = tw.def;
-    // chip body
-    ctx.fillStyle = def.color;
-    ctx.globalAlpha = 0.16;
-    roundRect(cx - 34, cy - 34, 68, 68, 10); ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = def.color;
+  function drawSpawnHatches() {
+    for (const s of SPAWNS) {
+      ctx.fillStyle = 'rgba(255,90,77,0.08)';
+      ctx.strokeStyle = 'rgba(255,90,77,0.25)';
+      ctx.lineWidth = 1.5;
+      roundRect(s.x - 20, s.y - 12, 40, 24, 6);
+      ctx.fill(); ctx.stroke();
+      // little vent slits
+      ctx.strokeStyle = 'rgba(255,90,77,0.2)';
+      for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(s.x + i * 9, s.y - 5);
+        ctx.lineTo(s.x + i * 9, s.y + 5);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawDatacentre(thermal) {
+    const x = CX - DC_W / 2, y = CY - DC_H / 2;
+    // slab
+    ctx.fillStyle = thermal ? 'rgba(209,59,52,0.22)' : 'rgba(209,59,52,0.13)';
+    ctx.strokeStyle = thermal ? '#ff5a4d' : '#6e2020';
     ctx.lineWidth = 2;
-    roundRect(cx - 34, cy - 34, 68, 68, 10); ctx.stroke();
-    // emoji
-    ctx.font = '34px serif';
+    roundRect(x, y, DC_W, DC_H, 12);
+    ctx.fill(); ctx.stroke();
+
+    // server rack stripes + blinkenlights
+    const now = performance.now() / 1000;
+    for (let r = 0; r < 4; r++) {
+      const ry = y + 16 + r * 22;
+      ctx.strokeStyle = 'rgba(255,138,128,0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + 14, ry); ctx.lineTo(x + DC_W - 14, ry); ctx.stroke();
+      for (let c = 0; c < 5; c++) {
+        const on = Math.sin(now * (2 + r) + c * 1.7 + r) > 0;
+        ctx.fillStyle = on ? (c === 4 ? '#ff5a4d' : '#6ddb85') : 'rgba(107,85,85,0.4)';
+        ctx.beginPath();
+        ctx.arc(x + 24 + c * 24, ry + 8, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // nameplate
+    ctx.fillStyle = '#b39494';
+    ctx.font = '700 10px "IBM Plex Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(def.emoji, cx, cy + 2);
-    // hp bar
-    const frac = Math.max(0, tw.hp / tw.maxHp);
-    if (frac < 1) {
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(cx - 30, cy + 30, 60, 5);
-      ctx.fillStyle = frac > 0.5 ? '#6ddb85' : (frac > 0.25 ? '#ff8a5a' : '#ff5a4d');
-      ctx.fillRect(cx - 30, cy + 30, 60 * frac, 5);
+    ctx.fillText('NOMINALOPS DC-1', CX, y + DC_H - 9);
+
+    // integrity arc around the slab
+    const frac = Math.max(0, integrity / maxIntegrity());
+    ctx.strokeStyle = frac > 0.5 ? '#6ddb85' : (frac > 0.25 ? '#ffb454' : '#ff5a4d');
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(CX, CY, DC_RADIUS, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(107,85,85,0.3)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(CX, CY, DC_RADIUS, -Math.PI / 2 + Math.PI * 2 * frac, Math.PI * 1.5);
+    ctx.stroke();
+  }
+
+  function drawBear(b) {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (b.phase === 'emerge') {
+      const p = Math.min(1, b.t / EMERGE_TIME);
+      // telegraph glow on the hatch
+      ctx.fillStyle = 'rgba(111,210,255,' + (0.25 * (1 - p)) + ')';
+      ctx.beginPath(); ctx.arc(b.x, b.y, 30, 0, Math.PI * 2); ctx.fill();
+      const size = 14 + 38 * p;
+      ctx.font = size + 'px serif';
+      ctx.globalAlpha = 0.4 + 0.6 * p;
+      ctx.fillText('🐻‍❄️', b.x, b.y);
+      ctx.globalAlpha = 1;
+    } else {
+      const wob = REDUCED_MOTION ? 0 : Math.sin(b.t * 9 + b.wob) * 3;
+      ctx.font = '52px serif';
+      ctx.fillText('🐻‍❄️', b.x, b.y + wob);
     }
   }
 
-  function drawBear(b, nowSec) {
-    const cy = rowCenterY(b.row);
-    const waddle = Math.sin(b.t * 7) * 3;
-    const chilled = b.slowUntil > nowSec;
-    if (chilled) {
-      ctx.fillStyle = 'rgba(111,210,255,0.18)';
-      ctx.beginPath(); ctx.arc(b.x, cy, b.def.size * 0.6, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.font = b.def.size + 'px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(b.def.emoji, b.x, cy + waddle);
-    // armoured/boss ring
-    if (b.def.armor || b.def.boss) {
-      ctx.strokeStyle = b.def.boss ? '#ff5a4d' : '#6fd2ff';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(b.x, cy, b.def.size * 0.5, 0, Math.PI * 2); ctx.stroke();
-    }
-    // hp bar
-    const frac = Math.max(0, b.hp / b.maxHp);
-    if (frac < 1) {
-      const w = b.def.size;
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(b.x - w / 2, cy - b.def.size * 0.62, w, 5);
-      ctx.fillStyle = frac > 0.5 ? '#6ddb85' : (frac > 0.25 ? '#ff8a5a' : '#ff5a4d');
-      ctx.fillRect(b.x - w / 2, cy - b.def.size * 0.62, w * frac, 5);
-    }
-  }
-
-  function drawBlob(b, nowSec) {
-    const pulse = 1 + Math.sin(nowSec * 6 + b.x) * 0.08;
-    const big = b.amount > 30;
-    ctx.fillStyle = big ? '#ff8a5a' : '#6ddb85';
-    ctx.globalAlpha = 0.9;
-    ctx.beginPath(); ctx.arc(b.x, b.y, 16 * pulse, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = '#06120b';
-    ctx.font = 'bold 11px "IBM Plex Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('kWh', b.x, b.y + 1);
-  }
-
-  function drawEffect(e, nowSec) {
-    const age = (nowSec - e.born) / e.life;   // 0..1
-    const fade = 1 - age;
-    ctx.globalAlpha = Math.max(0, fade);
-    if (e.kind === 'boom') {
+  function drawEffect(e) {
+    const age = (roundClock - e.born) / e.life;   // 0..1
+    ctx.globalAlpha = Math.max(0, 1 - age);
+    if (e.kind === 'zap') {
+      ctx.strokeStyle = e.color;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r * (0.5 + age * 1.2), 0, Math.PI * 2); ctx.stroke();
+      ctx.font = (26 - age * 10) + 'px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('⚡', e.x, e.y);
+    } else if (e.kind === 'boom') {
       ctx.strokeStyle = e.color; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(e.x, e.y, e.r * (0.4 + age), 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = e.color; ctx.globalAlpha = fade * 0.25;
+      ctx.fillStyle = e.color; ctx.globalAlpha = (1 - age) * 0.25;
       ctx.beginPath(); ctx.arc(e.x, e.y, e.r * (0.4 + age), 0, Math.PI * 2); ctx.fill();
-    } else if (e.kind === 'frost') {
-      ctx.fillStyle = e.color;
-      ctx.beginPath(); ctx.arc(e.x, e.y, 18 * (1 - age * 0.4), 0, Math.PI * 2); ctx.fill();
-    } else {
-      // spark / puff
-      const r = (e.kind === 'puff') ? 22 : 12;
-      ctx.fillStyle = e.color;
-      ctx.beginPath(); ctx.arc(e.x, e.y, r * (0.5 + age), 0, Math.PI * 2); ctx.fill();
+    } else {           // ring (miss feedback)
+      ctx.strokeStyle = e.color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r * (0.6 + age), 0, Math.PI * 2); ctx.stroke();
     }
     ctx.globalAlpha = 1;
+  }
+
+  function drawFloater(f) {
+    const age = (roundClock - f.born) / 0.9;
+    ctx.globalAlpha = Math.max(0, 1 - age);
+    ctx.fillStyle = f.color;
+    ctx.font = '700 15px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.txt, f.x, f.y - age * 28);
+    ctx.globalAlpha = 1;
+  }
+
+  function spawnEffect(kind, x, y, color, r) {
+    effects.push({ kind, x, y, color, r: r || 26, born: roundClock, life: kind === 'boom' ? 0.45 : 0.4 });
   }
 
   function roundRect(x, y, w, h, r) {
@@ -1143,11 +1018,14 @@
     ctx.closePath();
   }
 
+  function triggerShake() {
+    if (REDUCED_MOTION) return;
+    shakeUntil = performance.now() + 200;
+  }
+
   /* ============================================================
      LOOP
      ============================================================ */
-  // Schedule the loop only if it isn't already running, so a resumed tab
-  // (whose paused rAF callback is still pending) can't start a second loop.
   function startLoop() {
     if (loopRunning) return;
     loopRunning = true;
@@ -1157,12 +1035,10 @@
 
   function frame(now) {
     if (state !== 'playing') { loopRunning = false; return; }
-    const nowSec = now / 1000;
     let dt = (now - lastFrame) / 1000;
     lastFrame = now;
-    if (dt > 0.1) dt = 0.1;          // clamp after tab-away / hitches
+    if (dt > 0.1) dt = 0.1;            // clamp after tab-away / hitches
 
-    // screen shake
     if (now < shakeUntil) {
       const s = (Math.random() * 4 - 2).toFixed(1);
       document.documentElement.style.setProperty('--shake', s + 'px');
@@ -1170,25 +1046,38 @@
       document.documentElement.style.setProperty('--shake', '0px');
     }
 
-    update(dt, nowSec);
-    if (state === 'playing') {       // update() may have ended the game
-      render(nowSec);
+    update(dt);
+    if (state === 'playing') {         // update() may have ended the round
+      render();
       requestAnimationFrame(frame);
     } else {
       loopRunning = false;
     }
   }
 
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state === 'playing') startLoop();
+  });
+
   /* ============================================================
      HUD / TOASTS / A11Y
      ============================================================ */
   function updateHud() {
-    kwhEl.textContent = Math.floor(kwh);
-    waveEl.textContent = (Math.max(0, waveIndex + 1)) + ' / ' + WAVES.length;
-    waveTagEl.textContent = 'W·' + String(Math.max(0, waveIndex + 1)).padStart(2, '0');
-    killsEl.textContent = kills;
-    const total = bears.length;
-    waveEl.classList.toggle('crit', total > 6);
+    hudKwh.textContent = fmt(Math.floor(kwh));
+    const ipct = Math.max(0, Math.round(integrity / maxIntegrity() * 100));
+    hudIntegrity.textContent = ipct + '%';
+    hudIntegrity.classList.toggle('crit', ipct <= 25);
+    hudCombo.textContent = '×' + comboMult().toFixed(1);
+    const t = Math.ceil(timeLeft);
+    hudTimer.textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+    hudTimer.classList.toggle('crit', state === 'playing' && t <= 10);
+    roundTag.textContent = 'R·' + String(round).padStart(2, '0');
+  }
+
+  function fmt(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e4) return (n / 1e3).toFixed(1) + 'k';
+    return String(n);
   }
 
   let toastTimer = null;
@@ -1199,103 +1088,182 @@
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
   }
 
-  let hintTimer = null;
-  function flashHint(msg) {
-    showToast(msg);
-  }
-
   function announce(msg) { srStatus.textContent = msg; }
 
   /* ============================================================
-     LIFECYCLE
+     SHOP (between rounds)
      ============================================================ */
-  function startGame() {
-    state = 'playing';
-    kwh = STARTING_KWH;
-    kills = 0;
-    waveIndex = -1;
-    towers = []; bears = []; projectiles = []; blobs = []; effects = []; spawnQueue = [];
-    laneMowers = new Array(ROWS).fill(true);
-    selectedTowerId = null;
-    Object.keys(cooldowns).forEach(k => delete cooldowns[k]);
-    clearTimeout(waveTimer);         // drop any pending "next wave" from a prior round
-    stage.classList.remove('menu-open');   // stage hugs the canvas during play
-    menuOverlay.hidden = true;
-    endOverlay.hidden = true;
-    buildPicker();
-    refreshPicker();
-    updateHud();
-    startWave(0);
-    startLoop();
-  }
+  function buildShop() {
+    shopBal.textContent = fmt(Math.floor(kwh));
+    shopItems.innerHTML = '';
 
-  function endGame(won) {
-    if (state !== 'playing') return;
-    state = won ? 'won' : 'lost';
-    clearTimeout(waveTimer);         // cancel any in-flight wave advance
-    document.documentElement.style.setProperty('--shake', '0px');
-    const againBtn = document.getElementById('againBtn');
-    if (won) {
-      endOverlay.classList.remove('thermal');
-      endTitle.textContent = 'PERIMETER HELD';
-      endTitle.className = 'win';
-      endBody.innerHTML = 'All ' + WAVES.length + ' waves repelled. ' + kills +
-        ' bears conceptually neutralised. The data centre is safe and continues to ' +
-        'emit at full tilt. Status: <b style="color:var(--green-dot)">NOMINAL</b>.';
-      againBtn.textContent = 'RE-CERTIFY · PLAY AGAIN';
-    } else {
-      // the mock's "thermal event" treatment
-      endOverlay.classList.add('thermal');
-      endTitle.textContent = 'THERMAL EVENT';
-      endTitle.className = '';
-      endBody.innerHTML = 'The datacentre cannot be defended. Only delayed. A bear reached ' +
-        'the cooling intake on wave ' + (waveIndex + 1) + '; ' + kills + ' were repelled ' +
-        'before the breach. An incident report has been filed and immediately marked <b>NOMINAL</b>.';
-      againBtn.textContent = 'REBOOT & DENY IT HAPPENED';
+    for (const item of CATALOG) {
+      const lvl = upgrades[item.id];
+      const cost = item.cost(lvl);
+      const capped = lvl >= item.max;
+      const el = document.createElement('button');
+      el.className = 'upgrade';
+      el.disabled = capped || kwh < cost;
+      el.innerHTML =
+        '<span class="u-emoji">' + item.emoji + '</span>' +
+        '<span class="u-mid">' +
+          '<span class="u-name">' + item.name +
+            ' <span class="u-lvl">LV ' + lvl + (capped ? ' · MAX' : '') + '</span></span>' +
+          '<span class="u-desc">' + (capped ? 'Procurement limit reached. Even we have limits. (We don\'t; it\'s a balance decision.)' : item.desc(lvl)) + '</span>' +
+        '</span>' +
+        '<span class="u-cost">' + (capped ? '—' : fmt(cost)) + '</span>';
+      el.addEventListener('click', () => {
+        if (upgrades[item.id] >= item.max || kwh < item.cost(upgrades[item.id])) return;
+        kwh -= item.cost(upgrades[item.id]);
+        upgrades[item.id]++;
+        saveGame();
+        announce(item.name + ' acquired. Level ' + upgrades[item.id] + '.');
+        buildShop();
+        updateHud();
+      });
+      shopItems.appendChild(el);
     }
-    stage.classList.add('menu-open');      // give the end overlay room to breathe
-    endOverlay.hidden = false;
-    announce(won ? 'You won. Perimeter held.' : 'Game over. Perimeter breached.');
+
+    // Prestige card
+    const pCost = PRESTIGE.cost(prestiges);
+    const p = document.createElement('button');
+    p.className = 'upgrade prestige';
+    p.disabled = kwh < pCost;
+    p.innerHTML =
+      '<span class="u-emoji">' + PRESTIGE.emoji + '</span>' +
+      '<span class="u-mid">' +
+        '<span class="u-name">' + PRESTIGE.name +
+          ' <span class="u-lvl">GEN ' + (prestiges + 1) + '</span></span>' +
+        '<span class="u-desc">' + PRESTIGE.desc(prestiges) + '</span>' +
+      '</span>' +
+      '<span class="u-cost">' + fmt(pCost) + '</span>';
+    p.addEventListener('click', () => {
+      if (kwh < PRESTIGE.cost(prestiges)) return;
+      prestiges++;
+      kwh = 0;
+      upgrades = { shard: 0, cooling: 0, zapper: 0, reg: 0 };
+      round = 1;
+      saveGame();
+      showToast('📣 NEW MODEL ANNOUNCED · output ×' + prestigeMult().toFixed(1));
+      announce('New model announced. All equipment reset. Permanent output multiplier ' + prestigeMult().toFixed(1) + '.');
+      buildShop();
+      updateHud();
+      nextBtn.textContent = 'INITIATE ROUND ' + round;
+    });
+    shopItems.appendChild(p);
   }
 
   /* ============================================================
-     EVENT WIRING
+     ROUND LIFECYCLE
      ============================================================ */
-  let hoverCell = null;
+  function startRound() {
+    state = 'playing';
+    integrity = maxIntegrity();
+    timeLeft = ROUND_SECONDS;
+    roundClock = 0;
+    bears = []; effects = []; floaters = [];
+    streak = 0;
+    bestStreakRound = 0;
+    roundKwh = 0;
+    roundContained = 0;
+    roundBreaches = 0;
+    nextSpawnAt = 0.8;
+    thermalUntil = -1;
+    thermalFired = THERMAL_AT.map(() => false);
+    zapperNextAt = zapperInterval(upgrades.zapper);
+    endedByBreach = false;
+    stage.classList.remove('thermal');
+    stage.classList.remove('menu-open');   // stage hugs the canvas during play
 
-  stage.addEventListener('click', onStageClick);
-  stage.addEventListener('mousemove', (e) => {
-    if (state !== 'playing') { hoverCell = null; return; }
-    const p = canvasPoint(e);
-    const col = Math.floor(p.x / CELL), row = Math.floor(p.y / CELL);
-    hoverCell = (col >= 0 && col < COLS && row >= 0 && row < ROWS) ? { col, row } : null;
-  });
-  stage.addEventListener('mouseleave', () => { hoverCell = null; });
-  // touch: place on tap
-  stage.addEventListener('touchstart', (e) => {
-    if (state === 'playing') { e.preventDefault(); onStageClick(e); }
-  }, { passive: false });
+    // Inference Shards pay out up front — passive income, actively smug.
+    if (upgrades.shard > 0) {
+      const passive = Math.round(25 * upgrades.shard * prestigeMult());
+      kwh += passive;
+      roundKwh += passive;
+      showToast('🧠 INFERENCE SHARDS YIELD +' + passive + ' kWh');
+    }
 
-  document.getElementById('startBtn').addEventListener('click', startGame);
-  document.getElementById('againBtn').addEventListener('click', startGame);
+    menuOverlay.hidden = true;
+    shopOverlay.hidden = true;
+    updateHud();
+    announce('Round ' + round + ' started. Tap the bears.');
+    startLoop();
+  }
 
-  // keyboard: 1-5 quick-select, Esc deselect
-  window.addEventListener('keydown', (e) => {
+  function endRound() {
     if (state !== 'playing') return;
-    if (e.key === 'Escape') { selectedTowerId = null; refreshPicker(); return; }
-    const n = parseInt(e.key, 10);
-    if (n >= 1 && n <= TOWERS.length) selectTower(TOWERS[n - 1].id);
-  });
+    state = 'shop';
+    stage.classList.remove('thermal');
+    stage.classList.add('menu-open');  // give the shop overlay room to breathe
+    document.documentElement.style.setProperty('--shake', '0px');
+    updateHud();                       // final integrity/timer, not last-frame values
+    render();                          // leave the final frame visible under the overlay
 
-  // On tab re-focus, resume the loop (startLoop no-ops if it never stopped),
-  // resetting lastFrame so dt doesn't explode after time away.
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && state === 'playing') startLoop();
-  });
+    const survived = !endedByBreach;
+    if (survived) {
+      shopOverlay.classList.remove('thermal-bg');
+      shopTitle.textContent = 'ROUND ' + round + ' CONTAINED';
+      shopTitle.className = 'win';
+      shopBody.innerHTML = 'Sixty seconds of climate, manually refused. ' +
+        'The datacentre remains at a comfortable ' +
+        Math.round(integrity / maxIntegrity() * 100) + '% and continues to emit at full tilt. ' +
+        'Status: <b style="color:var(--green-dot)">NOMINAL</b>.';
+      round++;
+    } else {
+      shopOverlay.classList.add('thermal-bg');
+      shopTitle.textContent = 'INFERENCE DEGRADED';
+      shopTitle.className = '';
+      shopBody.innerHTML = 'Shareholders notified. The intake is full of bear and the bear is ' +
+        'full of opinions. ' + fmt(roundContained) + ' anomalies were contained before the lapse, ' +
+        'which the incident report describes as <b>NOMINAL-ADJACENT</b>. Your kWh survives; ' +
+        'your dignity was never load-bearing.';
+      // no round++ — the climate makes you re-sit the exam
+    }
 
-  // boot
-  buildPicker();
+    reportEl.innerHTML =
+      reportRow('Climate anomalies contained', fmt(roundContained)) +
+      reportRow('kWh metered', '+' + fmt(roundKwh), true) +
+      reportRow('Best combo', '×' + Math.min(COMBO_MAX, 1 + bestStreakRound * COMBO_STEP).toFixed(1)) +
+      reportRow('Perimeter lapses', String(roundBreaches)) +
+      (prestiges > 0 ? reportRow('Model generation bonus', '×' + prestigeMult().toFixed(1), true) : '') +
+      reportRow('Lifetime contained', fmt(lifetimeContained));
+
+    nextBtn.textContent = survived
+      ? 'INITIATE ROUND ' + round
+      : 'FILE INCIDENT REPORT · RETRY ROUND ' + round;
+
+    buildShop();
+    saveGame();
+    shopOverlay.hidden = false;
+    shopOverlay.scrollTop = 0;
+    announce(survived
+      ? 'Round contained. ' + roundContained + ' anomalies contained, ' + roundKwh + ' kilowatt hours earned.'
+      : 'Inference degraded. Shareholders notified. ' + roundContained + ' anomalies contained.');
+  }
+
+  function reportRow(k, v, plus) {
+    return '<div class="row"><span class="k">' + k + '</span><span class="v' +
+      (plus ? ' plus' : '') + '">' + v + '</span></div>';
+  }
+
+  /* ============================================================
+     BOOT
+     ============================================================ */
+  document.getElementById('startBtn').addEventListener('click', startRound);
+  nextBtn.addEventListener('click', startRound);
+
+  const returning = loadGame();
+  integrity = maxIntegrity();          // pre-round HUD reads 100%, not base/upgraded
+  if (returning && (kwh > 0 || round > 1 || prestiges > 0)) {
+    document.getElementById('startBtn').textContent =
+      'RESUME CONTAINMENT · ROUND ' + round;
+    menuFine.innerHTML = 'Welcome back, Operator. Your ' +
+      fmt(Math.floor(kwh)) + ' kWh and ' + (prestiges > 0 ? 'generation-' + (prestiges + 1) + ' fleet' : 'equipment') +
+      ' were kept exactly where you left them, per the retention policy you didn\'t read.';
+  }
   updateHud();
+  render();
+  runBootLog();
 })();
 </script>
 </body>
