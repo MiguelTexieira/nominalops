@@ -190,14 +190,10 @@
     display: inline-flex;
     white-space: nowrap;
     will-change: transform;
-    animation: crawl 60s linear infinite;
+    /* crawl is driven from the main rAF loop, not a CSS animation — see TICKER section */
     padding: 6px 0;
   }
   .ticker .track span { padding: 0 26px; }
-  @keyframes crawl {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
 
   /* ============================================================
      LAYOUT — mobile-first single column, 22px gutters
@@ -763,7 +759,6 @@
      MOTION / RESPONSIVE
      ============================================================ */
   @media (prefers-reduced-motion: reduce) {
-    .ticker .track { animation: none; }
     .status-badge .dot,
     .hero .rate .up,
     .breathe-zone .halo,
@@ -1223,6 +1218,13 @@
       if (m.sub) el.sub.textContent = m.sub(tokens, sessionTokens);
     }
 
+    // news ticker crawl (variables defined in the TICKER section below;
+    // frame() first runs after the whole script has executed)
+    if (allowMotion && tickerSetWidth > 0) {
+      tickerOffset = (tickerOffset + TICKER_SPEED * dt) % tickerSetWidth;
+      track.style.transform = "translateX(" + (-tickerOffset).toFixed(2) + "px)";
+    }
+
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -1459,6 +1461,7 @@
     "Datacenter cooling tower achieves spiritual enlightenment, evaporates",
     "Sad intern requests bigger shovel; request escalated, then mulched",
     "Polar bear seen updating LinkedIn to 'Open to relocation'",
+    "Displaced polar bears regrouping at datacentre perimeter; threat level: nominal",
     "Quarterly report: planet down 4%, shareholder value up 11%, synergy stable",
     "Sea level edges higher; coastline described as 'a living document'",
     "Calculator, idle for years, asked to comment. Declines",
@@ -1469,7 +1472,19 @@
   ];
   const track = document.getElementById("tickerTrack");
   const oneSet = HEADLINES.map(h => "<span>" + h + " ▲</span>").join("");
-  track.innerHTML = oneSet + oneSet; // two copies → -50% translate loops seamlessly
+  track.innerHTML = oneSet + oneSet; // two copies → wrapping at one set's width loops seamlessly
+
+  /* The crawl runs inside the main rAF loop (see frame()) instead of a CSS
+     animation: browsers suspend CSS animations on hidden tabs and sometimes
+     fail to resume them, which froze the ticker. rAF always comes back.
+     Pixel-based speed also stays constant as headlines are added. */
+  const TICKER_SPEED = 90;   // px per second
+  let tickerOffset = 0;
+  let tickerSetWidth = 0;    // width of ONE copy of the headlines
+  function measureTicker() { tickerSetWidth = track.scrollWidth / 2; }
+  measureTicker();
+  window.addEventListener("resize", measureTicker);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureTicker);
 
   /* ============================================================
      a11y live region helper
